@@ -19,6 +19,7 @@ import ComposeConversation from 'dashboard/components-next/NewConversation/Compo
 import NextButton from 'dashboard/components-next/button/Button.vue';
 import VoiceCallButton from 'dashboard/components-next/Contacts/VoiceCallButton.vue';
 import InlineInput from 'dashboard/components-next/inline-input/InlineInput.vue';
+import ContactAPI from 'dashboard/api/contacts';
 
 export default {
   components: {
@@ -57,6 +58,7 @@ export default {
       showEditModal: false,
       isEditingName: false,
       editName: '',
+      isRefreshingPhoto: false,
     };
   },
   computed: {
@@ -132,6 +134,22 @@ export default {
     },
   },
   methods: {
+    // ALLChat: download the contact's current WhatsApp photo
+    async refreshProfilePicture() {
+      this.isRefreshingPhoto = true;
+      try {
+        await ContactAPI.refreshProfilePicture(this.contact.id);
+        await this.$store.dispatch('contacts/show', { id: this.contact.id });
+        useAlert(this.$t('CONTACT_PANEL.PROFILE_PICTURE.SUCCESS'));
+      } catch (error) {
+        useAlert(
+          error?.response?.data?.error ||
+            this.$t('CONTACT_PANEL.PROFILE_PICTURE.ERROR')
+        );
+      } finally {
+        this.isRefreshingPhoto = false;
+      }
+    },
     toggleEditModal() {
       this.showEditModal = !this.showEditModal;
     },
@@ -370,6 +388,16 @@ export default {
           faded
           sm
           @click="toggleEditModal"
+        />
+        <NextButton
+          v-if="contact.phone_number"
+          v-tooltip.top-end="$t('CONTACT_PANEL.PROFILE_PICTURE.BUTTON')"
+          icon="i-ph-image-square"
+          slate
+          faded
+          sm
+          :is-loading="isRefreshingPhoto"
+          @click="refreshProfilePicture"
         />
         <ContactMergeModal :primary-contact="contact">
           <template #trigger>

@@ -98,3 +98,9 @@ google_contacts_sync_job:
   cron: '17 * * * *'
   class: 'GoogleContacts::SyncAllJob'
   queue: scheduled_jobs
+
+# ALLChat: executed daily at 0430 UTC; refreshes WhatsApp photos through Evolution API
+evolution_refresh_profile_pictures_job:
+  cron: '30 4 * * *'
+  class: 'Evolution::RefreshProfilePicturesJob'
+  queue: scheduled_jobs

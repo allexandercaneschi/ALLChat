@@ -100,6 +100,11 @@ class ContactAPI extends ApiClient {
     return axios.delete(`${this.url}/${contactId}/avatar`);
   }
 
+  // ALLChat: fetch the current WhatsApp photo through Evolution API
+  refreshProfilePicture(contactId) {
+    return axios.post(`${this.url}/${contactId}/profile_picture`);
+  }
+
   exportContacts(queryPayload) {
     return axios.post(`${this.url}/export`, queryPayload);
   }

@@ -450,6 +450,9 @@ en:
     survey:
       response: 'Please rate this conversation, %{link}'
   contacts:
+    profile_picture:
+      not_configured: 'WhatsApp photos are not configured. Set EVOLUTION_API_URL, EVOLUTION_API_KEY and EVOLUTION_INSTANCE.'
+      not_found: 'No WhatsApp photo found for this contact (it may be hidden by their privacy settings).'
     online:
       delete: '%{contact_name} is Online, please try again later'
   integration_apps:

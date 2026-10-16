@@ -384,6 +384,9 @@ pt_BR:
     survey:
       response: 'Por favor, classifique esta conversa, %{link}'
   contacts:
+    profile_picture:
+      not_configured: 'As fotos do WhatsApp não estão configuradas. Defina EVOLUTION_API_URL, EVOLUTION_API_KEY e EVOLUTION_INSTANCE.'
+      not_found: 'Nenhuma foto do WhatsApp encontrada para este contato (pode estar oculta pela privacidade dele).'
     online:
       delete: '%{contact_name} está Online, por favor, tente novamente mais tarde'
   integration_apps:

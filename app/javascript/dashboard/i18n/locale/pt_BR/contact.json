@@ -60,6 +60,11 @@
       "CONTACT_LABELS": "Etiquetas de contato",
       "PREVIOUS_CONVERSATIONS": "Conversas anteriores",
       "NO_RECORDS_FOUND": "Nenhum atributo encontrado"
+    },
+    "PROFILE_PICTURE": {
+      "BUTTON": "Atualizar foto do WhatsApp",
+      "SUCCESS": "Foto atualizada",
+      "ERROR": "Não foi possível atualizar a foto"
     }
   },
   "EDIT_CONTACT": {

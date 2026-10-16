@@ -61,6 +61,11 @@
       "CONTACT_LABELS": "Contact Labels",
       "PREVIOUS_CONVERSATIONS": "Previous Conversations",
       "NO_RECORDS_FOUND": "No attributes found"
+    },
+    "PROFILE_PICTURE": {
+      "BUTTON": "Update WhatsApp photo",
+      "SUCCESS": "Photo updated",
+      "ERROR": "Could not update the photo"
     }
   },
   "EDIT_CONTACT": {
@@ -292,7 +297,6 @@
       "ID": "(ID: {identifier})"
     }
   },
-
   "CONTACTS_LAYOUT": {
     "HEADER": {
       "TITLE": "Contacts",
@@ -614,7 +618,6 @@
       "CONFIRM_SINGLE": "Delete contact"
     }
   },
-
   "COMPOSE_NEW_CONVERSATION": {
     "CONTACT_SEARCH": {
       "ERROR_MESSAGE": "We couldn’t complete the search. Please try again."

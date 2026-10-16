@@ -288,6 +288,7 @@ Rails.application.routes.draw do
               resources :contact_inboxes, only: [:create]
               resources :labels, only: [:create, :index]
               resources :notes
+              resource :profile_picture, only: [:create]
               get :attachments, to: 'attachments#index'
               post :call, on: :member, to: 'calls#create' if ChatwootApp.enterprise?
             end
