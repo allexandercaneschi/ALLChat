@@ -20,6 +20,8 @@ RSpec.describe 'Conversation Messages API', type: :request do
 
       before do
         create(:inbox_member, inbox: conversation.inbox, user: agent)
+        # ALLChat: public replies require the conversation to be assigned to the agent
+        conversation.update!(assignee: agent)
       end
 
       it 'creates a new outgoing message' do

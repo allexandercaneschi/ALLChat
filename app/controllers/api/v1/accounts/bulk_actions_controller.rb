@@ -1,5 +1,6 @@
 class Api::V1::Accounts::BulkActionsController < Api::V1::Accounts::BaseController
   before_action :validate_assignment_targets, only: :create, if: -> { normalized_type == 'Conversation' }
+  before_action :validate_assignment_permission, only: :create, if: -> { normalized_type == 'Conversation' }
 
   def create
     case normalized_type
@@ -26,9 +27,6 @@ class Api::V1::Accounts::BulkActionsController < Api::V1::Accounts::BaseControll
 
     assignee_id = fields[:assignee_id]
     return render_could_not_create_error('Invalid assignee_id') if !assignee_id.nil? && !@current_account.users.exists?(id: assignee_id)
-    if fields.key?(:assignee_id) && !bulk_assignment_allowed?(assignee_id)
-      return render_could_not_create_error(I18n.t('conversations.requests.not_allowed.bulk_assignment'))
-    end
 
     team_id = fields[:team_id]
     # The dashboard sends 0 to remove the team assignment; accept '0' from form-encoded requests too.
@@ -38,6 +36,13 @@ class Api::V1::Accounts::BulkActionsController < Api::V1::Accounts::BaseControll
   end
 
   # ALLChat: agents can only take unassigned conversations (or keep their own) in bulk.
+  def validate_assignment_permission
+    fields = conversation_params[:fields] || {}
+    return if !fields.key?(:assignee_id) || bulk_assignment_allowed?(fields[:assignee_id])
+
+    render_could_not_create_error(I18n.t('conversations.requests.not_allowed.bulk_assignment'))
+  end
+
   def bulk_assignment_allowed?(assignee_id)
     return true if authenticate_by_access_token? || Current.account_user.administrator_or_supervisor?
     return false if assignee_id.to_i != current_user.id

@@ -64,6 +64,7 @@ class Api::V1::Accounts::Conversations::MessagesController < Api::V1::Accounts::
   def ensure_reply_allowed
     return if authenticate_by_access_token?
     return if ActiveModel::Type::Boolean.new.cast(params[:private])
+    return if params[:message_type].to_s == 'incoming'
     return if Conversations::OwnershipRules.new(conversation: @conversation, user: Current.user).can_reply?
 
     key = @conversation.assignee_id.present? ? 'reply_requires_participation' : 'reply_requires_assignment'
