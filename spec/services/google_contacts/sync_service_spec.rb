@@ -16,7 +16,9 @@ RSpec.describe GoogleContacts::SyncService do
 
   before do
     allow(GoogleContacts::Client).to receive(:new).and_return(client)
-    allow(client).to receive(:create_people) { |persons| persons.each_with_index.map { |p, i| p.deep_stringify_keys.merge('resourceName' => "people/new#{i}") } }
+    allow(client).to receive(:create_people) do |persons|
+      persons.each_with_index.map { |p, i| p.deep_stringify_keys.merge('resourceName' => "people/new#{i}") }
+    end
     allow(client).to receive(:update_people)
   end
 

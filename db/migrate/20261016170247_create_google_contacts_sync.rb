@@ -1,5 +1,12 @@
 class CreateGoogleContactsSync < ActiveRecord::Migration[7.1]
   def change
+    create_connections
+    create_links
+  end
+
+  private
+
+  def create_connections
     create_table :google_contacts_connections do |t|
       t.bigint :account_id, null: false
       t.string :email
@@ -15,7 +22,9 @@ class CreateGoogleContactsSync < ActiveRecord::Migration[7.1]
       t.timestamps
     end
     add_index :google_contacts_connections, :account_id, unique: true
+  end
 
+  def create_links
     create_table :google_contact_links do |t|
       t.bigint :account_id, null: false
       t.bigint :contact_id

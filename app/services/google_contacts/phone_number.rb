@@ -19,7 +19,7 @@ class GoogleContacts::PhoneNumber
 
   def initialize(raw)
     international = raw.to_s.strip.start_with?('+', '00')
-    digits = raw.to_s.gsub(/\D/, '').sub(/\A00/, '')
+    digits = raw.to_s.gsub(/\D/, '').delete_prefix('00')
     # A local number (DDD + number) without country code is Brazilian.
     digits = "#{BRAZIL}#{digits}" if !international && [10, 11].include?(digits.length)
     brazilian?(digits) ? parse_brazilian(digits) : parse_international(digits)
