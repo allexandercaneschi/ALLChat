@@ -144,10 +144,9 @@ RSpec.describe Macros::ExecutionService, type: :service do
   end
 
   describe '#send_attachment' do
-    # ALLChat: public replies need an assignee
-    before { conversation.update!(assignee: user) }
-
     before do
+      # ALLChat: public replies need an assignee
+      conversation.update!(assignee: user)
       macro.files.attach(io: Rails.root.join('spec/assets/avatar.png').open, filename: 'avatar.png', content_type: 'image/png')
       macro.save!
     end
