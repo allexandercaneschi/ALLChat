@@ -1,82 +1,76 @@
 # ALLChat - stack de TESTE para o Portainer
-#
-# Sobe um ALLChat separado da produção, com banco e Redis próprios.
-# Portainer > Stacks > Add stack > Web editor: cole este arquivo e preencha as
-# variáveis em "Environment variables" (lista no fim do arquivo).
-# Acesso: http://IP-DO-SERVIDOR:3100 (ou o domínio de teste no proxy reverso).
+# Mesmo formato da stack de produção do Chatwoot, com banco, Redis e porta próprios.
+# Acesso: http://IP-DO-SERVIDOR:3101
 
 services:
-  rails:
-    image: ghcr.io/allexandercaneschi/allchat:all-main
-    depends_on: [postgres, redis]
-    ports:
-      - '3100:3000'
-    environment: &common
-      NODE_ENV: production
-      RAILS_ENV: production
-      INSTALLATION_ENV: docker
-      RAILS_LOG_TO_STDOUT: 'true'
-      POSTGRES_HOST: postgres
-      POSTGRES_USERNAME: postgres
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DATABASE: allchat_teste
-      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
-      REDIS_PASSWORD: ${REDIS_PASSWORD}
-      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
-      FRONTEND_URL: ${FRONTEND_URL}
-      ENABLE_ACCOUNT_SIGNUP: 'false'
-      ACTIVE_STORAGE_SERVICE: local
-      # Google Contatos (opcional)
-      GOOGLE_CONTACTS_CLIENT_ID: ${GOOGLE_CONTACTS_CLIENT_ID}
-      GOOGLE_CONTACTS_CLIENT_SECRET: ${GOOGLE_CONTACTS_CLIENT_SECRET}
-      # Fotos do WhatsApp via Evolution (opcional)
-      EVOLUTION_API_URL: ${EVOLUTION_API_URL}
-      EVOLUTION_API_KEY: ${EVOLUTION_API_KEY}
-      EVOLUTION_INSTANCE: ${EVOLUTION_INSTANCE}
-    volumes:
-      - storage:/app/storage
-    entrypoint: docker/entrypoints/rails.sh
-    # Prepara o banco (cria e roda as migrations) e sobe o servidor
-    command: ['sh', '-c', 'bundle exec rails db:chatwoot_prepare && bundle exec rails s -p 3000 -b 0.0.0.0']
-    restart: unless-stopped
-
-  sidekiq:
-    image: ghcr.io/allexandercaneschi/allchat:all-main
-    depends_on: [postgres, redis, rails]
-    environment: *common
-    volumes:
-      - storage:/app/storage
-    command: ['bundle', 'exec', 'sidekiq', '-C', 'config/sidekiq.yml']
-    restart: unless-stopped
-
   postgres:
-    image: pgvector/pgvector:pg16
+    image: pgvector/pgvector:pg15
+    restart: always
     environment:
-      POSTGRES_DB: allchat_teste
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
-      - postgres:/var/lib/postgresql/data
-    restart: unless-stopped
+      - allchat_teste_postgres:/var/lib/postgresql/data
 
   redis:
     image: redis:alpine
-    command: ['sh', '-c', 'redis-server --requirepass "$$REDIS_PASSWORD"']
+    restart: always
+    command: ["sh", "-c", "redis-server --requirepass \"$REDIS_PASSWORD\""]
     environment:
-      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
     volumes:
-      - redis:/data
-    restart: unless-stopped
+      - allchat_teste_redis:/data
+
+  web:
+    image: ghcr.io/allexandercaneschi/allchat:all-main
+    extra_hosts:
+      - "whatsapp.alltecnologias.com.br:172.16.0.243"
+    dns:
+      - 172.16.0.254
+    restart: always
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - '3101:3000'
+    environment: &env
+      - SAFE_FETCH_ALLOW_PRIVATE_NETWORK=true
+      - FRONTEND_URL=${FRONTEND_URL}
+      - SECRET_KEY_BASE=${SECRET_KEY_BASE}
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DATABASE=allchat
+      - POSTGRES_USERNAME=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - REDIS_URL=redis://default:${REDIS_PASSWORD}@redis:6379
+      - RAILS_ENV=production
+      - INSTALLATION_ENV=docker
+      - ENABLE_ACCOUNT_SIGNUP=false
+      # Google Contatos (opcional)
+      - GOOGLE_CONTACTS_CLIENT_ID=${GOOGLE_CONTACTS_CLIENT_ID}
+      - GOOGLE_CONTACTS_CLIENT_SECRET=${GOOGLE_CONTACTS_CLIENT_SECRET}
+      # Fotos do WhatsApp via Evolution (opcional)
+      - EVOLUTION_API_URL=${EVOLUTION_API_URL}
+      - EVOLUTION_API_KEY=${EVOLUTION_API_KEY}
+      - EVOLUTION_INSTANCE=${EVOLUTION_INSTANCE}
+    volumes:
+      - allchat_teste_storage:/app/storage
+    command: ["sh", "-c", "bundle exec rails db:prepare && bundle exec rails s -p 3000 -b 0.0.0.0"]
+
+  sidekiq:
+    image: ghcr.io/allexandercaneschi/allchat:all-main
+    extra_hosts:
+      - "whatsapp.alltecnologias.com.br:172.16.0.243"
+    dns:
+      - 172.16.0.254
+    restart: always
+    depends_on:
+      - postgres
+      - redis
+    environment: *env
+    volumes:
+      - allchat_teste_storage:/app/storage
+    command: ["bundle", "exec", "sidekiq", "-C", "config/sidekiq.yml"]
 
 volumes:
-  storage:
-  postgres:
-  redis:
-
-# Variáveis para preencher no Portainer (Environment variables):
-#   POSTGRES_PASSWORD   senha forte qualquer
-#   REDIS_PASSWORD      senha forte qualquer
-#   SECRET_KEY_BASE     gere com: openssl rand -hex 64
-#   FRONTEND_URL        ex.: http://192.168.0.10:3100 ou https://chat-teste.alltecnologias.com.br
-#   GOOGLE_CONTACTS_CLIENT_ID / GOOGLE_CONTACTS_CLIENT_SECRET   (pode deixar vazio por enquanto)
-#   EVOLUTION_API_URL / EVOLUTION_API_KEY / EVOLUTION_INSTANCE  (pode deixar vazio por enquanto)
+  allchat_teste_postgres:
+  allchat_teste_redis:
+  allchat_teste_storage:
