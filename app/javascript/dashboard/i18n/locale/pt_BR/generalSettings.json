@@ -234,5 +234,31 @@
   "COMMON": {
     "OR": "Ou",
     "CLICK_HERE": "clique aqui"
+  },
+  "GOOGLE_CONTACTS_SYNC": {
+    "TITLE": "Google Contatos",
+    "NOTE": "Sincronização nos dois sentidos com uma conta Google a cada hora, casando os contatos pelo telefone. Os números de WhatsApp ficam sem o 9 aqui e com o 9 no Google. Se os dois lados mudarem, vale o Google. Exclusões não são espelhadas.",
+    "NOT_CONFIGURED": "Defina GOOGLE_CONTACTS_CLIENT_ID e GOOGLE_CONTACTS_CLIENT_SECRET no servidor para ativar a sincronização. URI de redirecionamento autorizado do cliente OAuth no Google: {uri}",
+    "CONNECT": "Conectar conta Google",
+    "CONNECTED_AS": "Conectado como {email}",
+    "DISCONNECT": "Desconectar",
+    "ENABLED": "Sincronização de hora em hora",
+    "DRY_RUN": "Modo simulação (mostra o que mudaria, sem gravar nada)",
+    "SYNC_NOW": "Sincronizar agora",
+    "SYNC_QUEUED": "Sincronização iniciada. Atualize em um minuto para ver o resultado.",
+    "LAST_SYNC": "Última sincronização: {time}",
+    "NEVER_SYNCED": "Ainda não sincronizado",
+    "LAST_RUN_DRY": "A última execução foi uma simulação",
+    "COUNTS": {
+      "CREATE_GOOGLE": "Novos no Google",
+      "CREATE_CHATWOOT": "Novos aqui",
+      "UPDATE_GOOGLE": "Atualizados no Google",
+      "UPDATE_CHATWOOT": "Atualizados aqui",
+      "DUPLICATES": "Telefones em mais de um contato (ignorados)",
+      "INVALID_PHONES": "Telefones ilegíveis (ignorados)"
+    },
+    "ERROR": "Último erro: {error}",
+    "API_ERROR": "Não foi possível atualizar a sincronização com o Google Contatos",
+    "CONFIRM_DISCONNECT": "Desconectar a conta Google? Os contatos já sincronizados continuam onde estão."
   }
 }

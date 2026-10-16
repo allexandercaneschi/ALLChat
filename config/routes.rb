@@ -225,6 +225,11 @@ Rails.application.routes.draw do
             end
           end
 
+          resource :google_contacts, only: [:show, :update, :destroy] do
+            post :authorization
+            post :sync
+          end
+
           resources :conversation_requests, only: [:index] do
             member do
               post :accept
@@ -760,6 +765,7 @@ Rails.application.routes.draw do
 
   get 'microsoft/callback', to: 'microsoft/callbacks#show'
   get 'google/callback', to: 'google/callbacks#show'
+  get 'google/contacts/callback', to: 'google/contacts_callbacks#show'
   get 'instagram/callback', to: 'instagram/callbacks#show'
   get 'tiktok/callback', to: 'tiktok/callbacks#show'
   get 'notion/callback', to: 'notion/callbacks#show'

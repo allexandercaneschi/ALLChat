@@ -16,6 +16,7 @@ import BuildInfo from './components/BuildInfo.vue';
 import AccountDelete from './components/AccountDelete.vue';
 import AudioTranscription from './components/AudioTranscription.vue';
 import ConversationRequestTimeout from './components/ConversationRequestTimeout.vue';
+import GoogleContactsSync from './components/GoogleContactsSync.vue';
 import SectionLayout from './components/SectionLayout.vue';
 
 export default {
@@ -27,6 +28,7 @@ export default {
     AccountDelete,
     AudioTranscription,
     ConversationRequestTimeout,
+    GoogleContactsSync,
     SectionLayout,
     WithLabel,
     NextInput,
@@ -251,6 +253,7 @@ export default {
     </div>
     <AudioTranscription v-if="showAudioTranscriptionConfig" />
     <ConversationRequestTimeout />
+    <GoogleContactsSync />
     <AccountId />
     <div v-if="!uiFlags.isFetchingItem && isOnChatwootCloud">
       <AccountDelete />

@@ -92,3 +92,9 @@ expire_conversation_requests_job:
   cron: '* * * * *'
   class: 'ConversationRequests::ExpireJob'
   queue: scheduled_jobs
+
+# ALLChat: executed hourly at minute 17; two-way Google Contacts sync
+google_contacts_sync_job:
+  cron: '17 * * * *'
+  class: 'GoogleContacts::SyncAllJob'
+  queue: scheduled_jobs

@@ -278,6 +278,8 @@ pt_BR:
       sla_missed_resolution: 'Meta de SLA de Resolução não alcançada para a conversa (#%{display_id})'
     attachment: 'Anexo'
     no_content: 'Sem conteúdo'
+  google_contacts:
+    not_configured: 'A sincronização com o Google Contatos não está configurada. Defina GOOGLE_CONTACTS_CLIENT_ID e GOOGLE_CONTACTS_CLIENT_SECRET.'
   conversations:
     requests:
       already_pending: 'Já existe uma solicitação pendente para esta conversa'

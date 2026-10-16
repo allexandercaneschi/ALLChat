@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_10_16_164243) do
+ActiveRecord::Schema[7.1].define(version: 2026_10_16_170247) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -1243,6 +1243,36 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_16_164243) do
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "google_contact_links", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "contact_id"
+    t.string "resource_name"
+    t.string "phone_key", null: false
+    t.string "google_hash"
+    t.string "chatwoot_hash"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "contact_id"], name: "index_google_contact_links_on_account_id_and_contact_id"
+    t.index ["account_id", "phone_key"], name: "index_google_contact_links_on_account_id_and_phone_key", unique: true
+  end
+
+  create_table "google_contacts_connections", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "email"
+    t.text "access_token"
+    t.text "refresh_token"
+    t.datetime "expires_at"
+    t.boolean "enabled", default: true, null: false
+    t.boolean "dry_run", default: true, null: false
+    t.string "contact_group_resource_name"
+    t.datetime "last_synced_at"
+    t.jsonb "last_sync_summary", default: {}, null: false
+    t.text "last_error"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_google_contacts_connections_on_account_id", unique: true
   end
 
   create_table "inbox_assignment_policies", force: :cascade do |t|

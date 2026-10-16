@@ -337,6 +337,8 @@ en:
       voice_call_missed: 'Missed call · %{inbox_name}'
     attachment: 'Attachment'
     no_content: 'No content'
+  google_contacts:
+    not_configured: 'Google Contacts sync is not configured. Set GOOGLE_CONTACTS_CLIENT_ID and GOOGLE_CONTACTS_CLIENT_SECRET.'
   conversations:
     requests:
       already_pending: 'There is already a pending request for this conversation'

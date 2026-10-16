@@ -243,5 +243,31 @@
   "COMMON": {
     "OR": "Or",
     "CLICK_HERE": "click here"
+  },
+  "GOOGLE_CONTACTS_SYNC": {
+    "TITLE": "Google Contacts",
+    "NOTE": "Two-way sync with a Google account every hour, matching contacts by phone. WhatsApp numbers stay without the 9th digit here and get it on Google. When both sides changed, Google wins. Deletions are not mirrored.",
+    "NOT_CONFIGURED": "Set GOOGLE_CONTACTS_CLIENT_ID and GOOGLE_CONTACTS_CLIENT_SECRET on the server to enable the sync. Authorized redirect URI for the Google OAuth client: {uri}",
+    "CONNECT": "Connect Google account",
+    "CONNECTED_AS": "Connected as {email}",
+    "DISCONNECT": "Disconnect",
+    "ENABLED": "Hourly sync",
+    "DRY_RUN": "Simulation mode (shows what would change, writes nothing)",
+    "SYNC_NOW": "Sync now",
+    "SYNC_QUEUED": "Sync started. Refresh in a minute to see the result.",
+    "LAST_SYNC": "Last sync: {time}",
+    "NEVER_SYNCED": "Not synced yet",
+    "LAST_RUN_DRY": "Last run was a simulation",
+    "COUNTS": {
+      "CREATE_GOOGLE": "New on Google",
+      "CREATE_CHATWOOT": "New here",
+      "UPDATE_GOOGLE": "Updated on Google",
+      "UPDATE_CHATWOOT": "Updated here",
+      "DUPLICATES": "Phones on more than one contact (skipped)",
+      "INVALID_PHONES": "Unreadable phones (skipped)"
+    },
+    "ERROR": "Last error: {error}",
+    "API_ERROR": "Could not update the Google Contacts sync",
+    "CONFIRM_DISCONNECT": "Disconnect the Google account? Contacts already synced stay where they are."
   }
 }
