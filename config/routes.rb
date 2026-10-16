@@ -198,6 +198,7 @@ Rails.application.routes.draw do
               end
               resource :contact_info_request, only: [:show, :create]
               resources :assignments, only: [:create]
+              resources :requests, only: [:index, :create]
               resources :labels, only: [:create, :index]
               resource :participants, only: [:show, :create, :update, :destroy]
               resource :direct_uploads, only: [:create]
@@ -221,6 +222,14 @@ Rails.application.routes.draw do
               get :attachments
               get :inbox_assistant
               get :reporting_events if ChatwootApp.enterprise?
+            end
+          end
+
+          resources :conversation_requests, only: [:index] do
+            member do
+              post :accept
+              post :decline
+              post :cancel
             end
           end
 

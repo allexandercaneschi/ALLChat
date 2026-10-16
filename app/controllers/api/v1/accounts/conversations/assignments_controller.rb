@@ -1,4 +1,6 @@
 class Api::V1::Accounts::Conversations::AssignmentsController < Api::V1::Accounts::Conversations::BaseController
+  rescue_from CustomExceptions::ConversationRequest::Error, with: :render_error_response
+
   # assigns agent/team to a conversation
   def create
     if params.key?(:assignee_id) || agent_bot_assignment?
@@ -13,6 +15,13 @@ class Api::V1::Accounts::Conversations::AssignmentsController < Api::V1::Account
   private
 
   def set_agent
+    case assignment_decision
+    when :forbidden
+      raise CustomExceptions::ConversationRequest::NotAllowed.new(reason: 'assignment')
+    when :transfer_request
+      return create_transfer_request
+    end
+
     resource = Conversations::AssignmentService.new(
       conversation: @conversation,
       assignee_id: params[:assignee_id],
@@ -40,6 +49,27 @@ class Api::V1::Accounts::Conversations::AssignmentsController < Api::V1::Account
       @conversation.update!(team: @team)
     end
     render json: @team
+  end
+
+  # ALLChat: dashboard assignments follow Conversations::OwnershipRules; API tokens assign directly.
+  def assignment_decision
+    return :direct if authenticate_by_access_token?
+
+    rules = Conversations::OwnershipRules.new(conversation: @conversation, user: Current.user)
+    return rules.assignment_decision(params[:assignee_id]) unless agent_bot_assignment?
+
+    # Handing over to a bot follows the same rule as releasing the conversation.
+    rules.assignment_decision(nil) == :direct || @conversation.assignee_id.nil? ? :direct : :forbidden
+  end
+
+  def create_transfer_request
+    request = ConversationRequest.create!(
+      conversation: @conversation,
+      requester: Current.user,
+      target: Current.account.users.find(params[:assignee_id]),
+      request_type: :transfer
+    )
+    render json: { conversation_request: request.push_event_data }, status: :accepted
   end
 
   def agent_bot_assignment?

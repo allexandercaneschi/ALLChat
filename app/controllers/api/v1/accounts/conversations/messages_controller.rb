@@ -59,14 +59,15 @@ class Api::V1::Accounts::Conversations::MessagesController < Api::V1::Accounts::
 
   private
 
-  # ALLChat: public replies from the dashboard require a human assignee.
+  # ALLChat: public replies from the dashboard follow Conversations::OwnershipRules.
   # API tokens (bots, n8n) and private notes are not affected.
   def ensure_reply_allowed
     return if authenticate_by_access_token?
     return if ActiveModel::Type::Boolean.new.cast(params[:private])
-    return if @conversation.assignee_id.present?
+    return if Conversations::OwnershipRules.new(conversation: @conversation, user: Current.user).can_reply?
 
-    render_could_not_create_error(I18n.t('conversations.messages.reply_requires_assignment'))
+    key = @conversation.assignee_id.present? ? 'reply_requires_participation' : 'reply_requires_assignment'
+    render_could_not_create_error(I18n.t("conversations.messages.#{key}"))
   end
 
   def message

@@ -26,12 +26,23 @@ class Api::V1::Accounts::BulkActionsController < Api::V1::Accounts::BaseControll
 
     assignee_id = fields[:assignee_id]
     return render_could_not_create_error('Invalid assignee_id') if !assignee_id.nil? && !@current_account.users.exists?(id: assignee_id)
+    if fields.key?(:assignee_id) && !bulk_assignment_allowed?(assignee_id)
+      return render_could_not_create_error(I18n.t('conversations.requests.not_allowed.bulk_assignment'))
+    end
 
     team_id = fields[:team_id]
     # The dashboard sends 0 to remove the team assignment; accept '0' from form-encoded requests too.
     return if [nil, 0, '0'].include?(team_id) || @current_account.teams.exists?(id: team_id)
 
     render_could_not_create_error('Invalid team_id')
+  end
+
+  # ALLChat: agents can only take unassigned conversations (or keep their own) in bulk.
+  def bulk_assignment_allowed?(assignee_id)
+    return true if authenticate_by_access_token? || Current.account_user.administrator_or_supervisor?
+    return false if assignee_id.to_i != current_user.id
+
+    !@current_account.conversations.where(display_id: params[:ids]).where.not(assignee_id: [nil, current_user.id]).exists?
   end
 
   def enqueue_conversation_job

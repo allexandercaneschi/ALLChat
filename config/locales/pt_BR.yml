@@ -279,6 +279,15 @@ pt_BR:
     attachment: 'Anexo'
     no_content: 'Sem conteúdo'
   conversations:
+    requests:
+      already_pending: 'Já existe uma solicitação pendente para esta conversa'
+      not_open: 'Esta solicitação não está mais pendente'
+      stale: 'A conversa mudou de responsável e esta solicitação não vale mais'
+      not_allowed:
+        assignment: 'Agentes só podem assumir conversas sem responsável. Para passar uma conversa sua, o outro agente precisa aceitar a transferência'
+        participation: 'Você já pode responder esta conversa, ou ela está sem responsável'
+        respond: 'Só o agente para quem a solicitação foi enviada pode responder'
+        bulk_assignment: 'Agentes só podem atribuir a si mesmos conversas sem responsável'
     captain:
       handoff: 'Transferindo para que outro agente dê assistência.'
     messages:
@@ -288,6 +297,7 @@ pt_BR:
       instagram_shared_post_content: 'Post compartilhado'
       deleted: Esta mensagem foi excluída
       reply_requires_assignment: Atribua a conversa a você para responder
+      reply_requires_participation: Esta conversa é de outro agente. Peça para participar antes de responder
       whatsapp:
         list_button_label: 'Escolha um item'
         call_permission_request_body: 'Gostaríamos de ligar para você em relação à sua conversa.'

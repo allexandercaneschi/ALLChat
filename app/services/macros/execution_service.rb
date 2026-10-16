@@ -24,6 +24,9 @@ class Macros::ExecutionService < ActionService
 
   def assign_agent(agent_ids)
     agent_ids = agent_ids.map { |id| id == 'self' ? @user.id : id }
+    # ALLChat: agents can only take conversations through macros; transfers need a request.
+    return unless Conversations::OwnershipRules.new(conversation: @conversation, user: @user).assignment_decision(agent_ids.first) == :direct
+
     super(agent_ids)
   end
 
@@ -39,7 +42,7 @@ class Macros::ExecutionService < ActionService
 
   def send_message(message)
     return if conversation_a_tweet?
-    return if @conversation.reload.assignee_id.blank?
+    return unless reply_allowed?
 
     params = { content: message[0], private: false }
 
@@ -50,7 +53,7 @@ class Macros::ExecutionService < ActionService
 
   def send_attachment(blob_ids)
     return if conversation_a_tweet?
-    return if @conversation.reload.assignee_id.blank?
+    return unless reply_allowed?
 
     return unless @macro.files.attached?
 
@@ -63,6 +66,11 @@ class Macros::ExecutionService < ActionService
     # Added reload here to ensure conversation us persistent with the latest updates
     mb = Messages::MessageBuilder.new(@user, @conversation.reload, params)
     mb.perform
+  end
+
+  # ALLChat: macros follow the same reply rules as the reply box.
+  def reply_allowed?
+    Conversations::OwnershipRules.new(conversation: @conversation.reload, user: @user).can_reply?
   end
 
   def send_webhook_event(webhook_url)
