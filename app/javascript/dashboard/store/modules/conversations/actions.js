@@ -14,6 +14,7 @@ import {
   isOnFoldersView,
 } from './helpers/actionHelpers';
 import messageReadActions from './actions/messageReadActions';
+import { useConversationRequestsStore } from 'dashboard/stores/conversationRequests';
 import messageTranslateActions from './actions/messageTranslateActions';
 import * as Sentry from '@sentry/vue';
 import { useAbortableRequest } from 'dashboard/composables/useAbortableRequest';
@@ -309,6 +310,8 @@ const actions = {
     }
   },
 
+  // ALLChat: resolves to { assignee }, { request } when the assignment became a
+  // transfer request the other agent must accept, or { error }.
   assignAgent: async (
     { dispatch },
     { conversationId, agentId, assigneeType }
@@ -319,13 +322,19 @@ const actions = {
         agentId,
         assigneeType,
       });
+      const request = response.data?.conversation_request;
+      if (request) {
+        useConversationRequestsStore().upsert(request);
+        return { request };
+      }
       dispatch('setCurrentChatAssignee', {
         conversationId,
         assignee: response.data,
         assigneeType,
       });
+      return { assignee: response.data };
     } catch (error) {
-      // Handle error
+      return { error: error?.response?.data?.error || '' };
     }
   },
 

@@ -5,6 +5,22 @@ import { createStore } from 'vuex';
 import ReplyBox from '../ReplyBox.vue';
 import WhatsappTemplates from '../WhatsappTemplates/Modal.vue';
 
+// ALLChat: ownership rules are covered in useConversationOwnership specs;
+// here the assignee alone decides whether the reply tab is usable.
+vi.mock('dashboard/composables/useConversationOwnership', async () => {
+  const { computed } = await import('vue');
+  const { useMapGetter } = await import('dashboard/composables/store');
+  return {
+    useConversationOwnership: () => {
+      const chat = useMapGetter('getSelectedChat');
+      const isUnassigned = computed(
+        () => chat.value?.meta?.assignee_type !== 'User'
+      );
+      return { isUnassigned, canReply: computed(() => !isUnassigned.value) };
+    },
+  };
+});
+
 const CHANNELS = [
   { name: 'WhatsApp Cloud', inbox: { channel_type: 'Channel::Whatsapp' } },
   {

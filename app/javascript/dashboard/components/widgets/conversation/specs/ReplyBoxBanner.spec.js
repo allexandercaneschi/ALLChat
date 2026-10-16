@@ -16,6 +16,33 @@ vi.mock('dashboard/composables', () => ({
   useAlert: vi.fn(),
 }));
 
+const fetchForConversation = vi.fn();
+vi.mock('dashboard/stores/conversationRequests', () => ({
+  useConversationRequestsStore: () => ({ fetchForConversation }),
+}));
+
+vi.mock('dashboard/composables/useConversationOwnership', async () => {
+  const { computed } = await import('vue');
+  const { useMapGetter } = await import('dashboard/composables/store');
+  return {
+    useConversationOwnership: () => {
+      const chat = useMapGetter('getSelectedChat');
+      const isUnassigned = computed(
+        () => chat.value?.meta?.assignee_type !== 'User'
+      );
+      return {
+        assignee: computed(() => chat.value?.meta?.assignee),
+        isUnassigned,
+        isOwner: computed(() => chat.value?.meta?.assignee?.id === 7),
+        isManager: computed(() => false),
+        canReply: computed(() => chat.value?.meta?.assignee?.id === 7),
+        pendingTransfer: computed(() => null),
+        pendingParticipation: computed(() => null),
+      };
+    },
+  };
+});
+
 describe('ReplyBoxBanner', () => {
   const currentUser = { id: 7 };
 
@@ -90,9 +117,13 @@ describe('ReplyBoxBanner', () => {
 
   it.each([
     [{}, 'CONVERSATION.UNASSIGNED_ASSIGN_TO_REPLY'],
-    [{ assignee: { id: 3 }, assignee_type: 'User' }, null],
+    [
+      { assignee: { id: 3, name: 'Pedro' }, assignee_type: 'User' },
+      'CONVERSATION_REQUESTS.BANNER.OWNED_BY_OTHER',
+    ],
+    [{ assignee: { id: 7 }, assignee_type: 'User' }, null],
   ])(
-    'shows the self-assign banner without typing only when unassigned (%o)',
+    'shows the ownership banner without typing (%o)',
     (meta, expectedMessage) => {
       const store = createStore({
         state: { chat: { id: 1, status: 'open', meta } },

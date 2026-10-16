@@ -53,6 +53,7 @@ import ConversationResolveAttributesModal from 'dashboard/components-next/Conver
 import { useKbd } from 'dashboard/composables/utils/useKbd';
 import { isFileTypeAllowedForChannel } from 'shared/helpers/FileHelper';
 import { isAIAssigneeType } from 'dashboard/helper/agentHelper';
+import { useConversationOwnership } from 'dashboard/composables/useConversationOwnership';
 
 import { LOCAL_STORAGE_KEYS } from 'dashboard/constants/localStorage';
 import { FEATURE_FLAGS } from 'dashboard/featureFlags';
@@ -96,6 +97,7 @@ export default {
     const copilot = useCopilotReply();
     const macroExecution = useMacroExecution();
     const shortcutKey = useKbd(['$mod', '+', 'enter']);
+    const ownership = useConversationOwnership();
 
     // Options API state and methods live on the instance proxy
     const { proxy } = getCurrentInstance();
@@ -158,6 +160,7 @@ export default {
       copilot,
       shortcutKey,
       macroExecution,
+      ownership,
     };
   },
   data() {
@@ -301,8 +304,10 @@ export default {
       return this.$store.getters['inboxes/getInbox'](this.inboxId);
     },
     messagePlaceHolder() {
-      if (this.isReplyLockedUntilAssigned) {
-        return this.$t('CONVERSATION.FOOTER.ASSIGN_TO_REPLY');
+      if (this.isReplyLockedByOwnership) {
+        return this.ownership.isUnassigned.value
+          ? this.$t('CONVERSATION.FOOTER.ASSIGN_TO_REPLY')
+          : this.$t('CONVERSATION_REQUESTS.ASK_TO_REPLY');
       }
       if (this.isEditorDisabled) {
         if (this.isAWhatsAppChannel) {
@@ -526,15 +531,13 @@ export default {
     isDefaultEditorMode() {
       return !this.showAudioRecorderEditor && !this.copilot.isActive.value;
     },
-    // ALLChat: public replies stay locked until a human agent is assigned.
-    isReplyLockedUntilAssigned() {
-      return (
-        !this.isOnPrivateNote &&
-        this.currentChat?.meta?.assignee_type !== 'User'
-      );
+    // ALLChat: public replies follow useConversationOwnership (unassigned
+    // conversations are locked for everyone, others' need participation).
+    isReplyLockedByOwnership() {
+      return !this.isOnPrivateNote && !this.ownership.canReply.value;
     },
     isEditorDisabled() {
-      if (this.isReplyLockedUntilAssigned) return true;
+      if (this.isReplyLockedByOwnership) return true;
       return (
         (this.isAWhatsAppChannel || this.isAPIInbox) &&
         !this.isOnPrivateNote &&

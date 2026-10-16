@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useTimeoutFn } from '@vueuse/core';
 import { useAlert, useTrack } from 'dashboard/composables';
+import { alertAssignmentResult } from 'dashboard/helper/assignmentFeedback';
 import { useMapGetter, useStore } from 'dashboard/composables/store';
 import { useAgentsList } from 'dashboard/composables/useAgentsList';
 import { useConversationLabels } from 'dashboard/composables/useConversationLabels';
@@ -104,19 +105,31 @@ const assignedAgent = computed({
   set(agent) {
     const agentId = agent ? agent.id : null;
     const assigneeType = agent ? agent.assignee_type || 'User' : null;
+    const conversationId = currentChat.value.id;
+    const previous = {
+      assignee: currentChat.value.meta.assignee,
+      assigneeType: currentChat.value.meta.assignee_type,
+    };
     store.dispatch('setCurrentChatAssignee', {
-      conversationId: currentChat.value.id,
+      conversationId,
       assignee: agent,
       assigneeType,
     });
     store
-      .dispatch('assignAgent', {
-        conversationId: currentChat.value.id,
-        agentId,
-        assigneeType,
-      })
-      .then(() => {
-        useAlert(t('CONVERSATION.CHANGE_AGENT'));
+      .dispatch('assignAgent', { conversationId, agentId, assigneeType })
+      .then(result => {
+        const changed = alertAssignmentResult(
+          result,
+          t,
+          t('CONVERSATION.CHANGE_AGENT')
+        );
+        // ALLChat: transfers wait for the other agent, so undo the optimistic change.
+        if (!changed) {
+          store.dispatch('setCurrentChatAssignee', {
+            conversationId,
+            ...previous,
+          });
+        }
       });
   },
 });

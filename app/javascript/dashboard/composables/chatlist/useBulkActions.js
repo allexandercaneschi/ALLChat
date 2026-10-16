@@ -7,6 +7,7 @@ import { useConversationRequiredAttributes } from 'dashboard/composables/useConv
 import { resolvesConversation } from 'dashboard/composables/useMacroExecution';
 import { CONVERSATION_EVENTS } from 'dashboard/helper/AnalyticsHelper/events';
 import wootConstants from 'dashboard/constants/globals';
+import { alertAssignmentResult } from 'dashboard/helper/assignmentFeedback';
 
 export function useBulkActions() {
   const store = useStore();
@@ -60,6 +61,24 @@ export function useBulkActions() {
 
   // Same method used in context menu, conversationId being passed from there.
   async function onAssignAgent(agent, conversationId = null) {
+    // ALLChat: a single conversation goes through the assignments endpoint,
+    // which turns an agent's hand-over into a transfer request.
+    if (conversationId?.length === 1) {
+      const result = await store.dispatch('assignAgent', {
+        conversationId: conversationId[0],
+        agentId: agent.id,
+        assigneeType: agent.assignee_type || 'User',
+      });
+      alertAssignmentResult(
+        result,
+        t,
+        t('CONVERSATION.CARD_CONTEXT_MENU.API.AGENT_ASSIGNMENT.SUCCESFUL', {
+          agentName: agent.name,
+          conversationId: conversationId[0],
+        })
+      );
+      return;
+    }
     try {
       await store.dispatch('bulkActions/process', {
         type: 'Conversation',
@@ -80,7 +99,7 @@ export function useBulkActions() {
         useAlert(t('BULK_ACTION.ASSIGN_SUCCESFUL'));
       }
     } catch (err) {
-      useAlert(t('BULK_ACTION.ASSIGN_FAILED'));
+      useAlert(err?.response?.data?.error || t('BULK_ACTION.ASSIGN_FAILED'));
     }
   }
 

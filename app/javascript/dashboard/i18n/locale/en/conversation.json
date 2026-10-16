@@ -606,5 +606,45 @@
   },
   "GALLERY_VIEW": {
     "ERROR_DOWNLOADING": "Unable to download attachment. Please try again"
+  },
+  "CONVERSATION_REQUESTS": {
+    "TRANSFER_SENT": "Transfer request sent to {name}. The conversation stays with you until they accept.",
+    "ASSIGN_FAILED": "Could not change the assignee",
+    "PROMPT": {
+      "TITLE": "Requests",
+      "TRANSFER": "{name} wants to transfer conversation #{id} to you",
+      "PARTICIPATION": "{name} asks to reply in conversation #{id}",
+      "CONTACT": "Contact: {name}",
+      "EXPIRES_IN": "Expires in {minutes} min",
+      "ACCEPT": "Accept",
+      "DECLINE": "Decline",
+      "VIEW": "View conversation",
+      "ERROR": "Could not answer the request"
+    },
+    "OUTCOME": {
+      "TRANSFER_ACCEPTED": "{name} accepted the transfer of conversation #{id}",
+      "PARTICIPATION_ACCEPTED": "{name} accepted your participation in conversation #{id}",
+      "DECLINED": "{name} declined your request for conversation #{id}",
+      "EXPIRED": "Your request for conversation #{id} expired without an answer"
+    },
+    "BANNER": {
+      "OWNED_BY_OTHER": "This conversation belongs to {name}. Ask to participate to reply.",
+      "ASK": "Ask to participate",
+      "ASK_SENT": "Participation request sent to {name}",
+      "WAITING_PARTICIPATION": "Waiting for {name} to accept your participation.",
+      "WAITING_TRANSFER": "Transfer to {name} is waiting for acceptance.",
+      "CANCEL": "Cancel",
+      "ERROR": "Could not send the request"
+    },
+    "ASK_TO_REPLY": "Ask to participate to reply",
+    "SETTINGS": {
+      "TITLE": "Conversation requests",
+      "NOTE": "How long an agent has to accept a transfer or a participation request. Unanswered requests expire and the conversation stays with its current assignee.",
+      "LABEL": "Minutes to accept",
+      "ERROR": "Enter a value between 1 and 1440 minutes",
+      "SAVE": "Save",
+      "SUCCESS": "Request timeout updated",
+      "FAILED": "Could not update the request timeout"
+    }
   }
 }

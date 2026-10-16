@@ -25,6 +25,7 @@ import CopilotLauncher from 'dashboard/components-next/copilot/CopilotLauncher.v
 import CopilotContainer from 'dashboard/components/copilot/CopilotContainer.vue';
 
 import MobileSidebarLauncher from 'dashboard/components-next/sidebar/MobileSidebarLauncher.vue';
+import ConversationRequestsPrompt from 'dashboard/components-next/ConversationRequests/ConversationRequestsPrompt.vue';
 import { useCallsStore } from 'dashboard/stores/calls';
 
 export default {
@@ -38,6 +39,7 @@ export default {
     CopilotContainer,
     FloatingCallWidget,
     MobileSidebarLauncher,
+    ConversationRequestsPrompt,
   },
   setup() {
     const upgradePageRef = ref(null);
@@ -161,6 +163,7 @@ export default {
         />
         <CopilotContainer />
         <FloatingCallWidget v-if="hasActiveCall || hasIncomingCall" />
+        <ConversationRequestsPrompt />
       </template>
       <CommandBar :is-paywalled="isAccountPaywalled" />
       <AddAccountModal

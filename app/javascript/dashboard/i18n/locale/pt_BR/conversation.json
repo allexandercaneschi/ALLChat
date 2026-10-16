@@ -567,5 +567,45 @@
   },
   "GALLERY_VIEW": {
     "ERROR_DOWNLOADING": "Não foi possível baixar o anexo. Por favor, tente novamente"
+  },
+  "CONVERSATION_REQUESTS": {
+    "TRANSFER_SENT": "Solicitação de transferência enviada para {name}. A conversa continua com você até ser aceita.",
+    "ASSIGN_FAILED": "Não foi possível alterar o responsável",
+    "PROMPT": {
+      "TITLE": "Solicitações",
+      "TRANSFER": "{name} quer transferir a conversa #{id} para você",
+      "PARTICIPATION": "{name} pede para responder na conversa #{id}",
+      "CONTACT": "Contato: {name}",
+      "EXPIRES_IN": "Expira em {minutes} min",
+      "ACCEPT": "Aceitar",
+      "DECLINE": "Recusar",
+      "VIEW": "Ver conversa",
+      "ERROR": "Não foi possível responder a solicitação"
+    },
+    "OUTCOME": {
+      "TRANSFER_ACCEPTED": "{name} aceitou a transferência da conversa #{id}",
+      "PARTICIPATION_ACCEPTED": "{name} aceitou sua participação na conversa #{id}",
+      "DECLINED": "{name} recusou sua solicitação na conversa #{id}",
+      "EXPIRED": "Sua solicitação na conversa #{id} expirou sem resposta"
+    },
+    "BANNER": {
+      "OWNED_BY_OTHER": "Esta conversa é de {name}. Peça para participar para responder.",
+      "ASK": "Pedir para participar",
+      "ASK_SENT": "Pedido de participação enviado para {name}",
+      "WAITING_PARTICIPATION": "Aguardando {name} aceitar sua participação.",
+      "WAITING_TRANSFER": "Transferência para {name} aguardando aceite.",
+      "CANCEL": "Cancelar",
+      "ERROR": "Não foi possível enviar a solicitação"
+    },
+    "ASK_TO_REPLY": "Peça para participar para responder",
+    "SETTINGS": {
+      "TITLE": "Solicitações de conversa",
+      "NOTE": "Tempo que o agente tem para aceitar uma transferência ou um pedido de participação. Sem resposta, a solicitação expira e a conversa continua com o responsável atual.",
+      "LABEL": "Minutos para aceitar",
+      "ERROR": "Informe um valor entre 1 e 1440 minutos",
+      "SAVE": "Salvar",
+      "SUCCESS": "Prazo das solicitações atualizado",
+      "FAILED": "Não foi possível atualizar o prazo"
+    }
   }
 }

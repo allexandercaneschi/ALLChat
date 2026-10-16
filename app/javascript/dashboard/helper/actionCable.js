@@ -15,6 +15,7 @@ import { VOICE_CALL_PROVIDERS } from 'dashboard/helper/inbox';
 import { markCallDismissed, isLocalCall } from 'dashboard/helper/voice';
 import { VOICE_CALL_DIRECTION } from 'dashboard/components-next/message/constants';
 import { FEATURE_FLAGS } from 'dashboard/featureFlags';
+import { useConversationRequestsStore } from 'dashboard/stores/conversationRequests';
 
 const { isImpersonating } = useImpersonation();
 const UNREAD_COUNTS_REFETCH_THROTTLE_MS = 5000;
@@ -72,6 +73,7 @@ class ActionCableConnector extends BaseActionCableConnector {
       'voice_call.outbound_connected': this.onVoiceCallOutboundConnected,
       'voice_call.outbound_accepted': this.onVoiceCallOutboundAccepted,
       'voice_call.ended': this.onVoiceCallEnded,
+      'conversation_request.updated': this.onConversationRequestUpdated,
     };
   }
 
@@ -417,6 +419,12 @@ class ActionCableConnector extends BaseActionCableConnector {
       accountId: data.account_id,
       silent: true,
     });
+  };
+
+  // ALLChat: transfer / participation request created or answered
+  // eslint-disable-next-line class-methods-use-this
+  onConversationRequestUpdated = data => {
+    useConversationRequestsStore().upsert(data);
   };
 
   onCacheInvalidate = data => {

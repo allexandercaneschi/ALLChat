@@ -41,6 +41,7 @@ import {
   isAConversationRoute,
   isAInboxViewRoute,
 } from 'dashboard/helper/routeHelpers';
+import { alertAssignmentResult } from 'dashboard/helper/assignmentFeedback';
 
 const prepareActions = (actions, t) => {
   return actions.map(action => ({
@@ -171,11 +172,12 @@ export function useConversationHotKeys() {
     return teams.value;
   });
 
-  const onChangeAssignee = action => {
-    store.dispatch('assignAgent', {
+  const onChangeAssignee = async action => {
+    const result = await store.dispatch('assignAgent', {
       conversationId: currentChat.value.id,
       agentId: action.agentInfo.id,
     });
+    alertAssignmentResult(result, t);
   };
 
   const onChangePriority = action => {
