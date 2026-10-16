@@ -1,0 +1,81 @@
+// ALLChat: ALL Tecnologias theme.
+// Overrides the "next colors" variables with the ALL design system tokens.
+// Dark is the default theme; light only gets the brand blue.
+//
+// Design system tokens (dark):
+//   surface-0 #0b1220 · surface-100 #121a2b · surface-200 #1a2438
+//   border #2a3750 · ink #e6edf5 · ink-muted #9aa8bc
+//   brand #35a8e0 · brand-strong #6cc3ee · brand-soft #0f2d3f
+//   status-critical #f26b6b · status-warning #f5be4a · status-ok #3ccb7f
+// scss-lint:disable PropertySortOrder
+@layer base {
+  :root {
+    --blue-9: 53 168 224;
+    --blue-10: 46 152 205;
+    --blue-11: 27 111 156;
+    --border-blue: 53, 168, 224, 0.5;
+  }
+
+  .dark {
+    // Neutral ramp tinted to the ALL navy surfaces
+    --slate-1: 11 18 32;
+    --slate-2: 18 26 43;
+    --slate-3: 26 36 56;
+    --slate-4: 32 43 65;
+    --slate-5: 38 50 74;
+    --slate-6: 42 55 80;
+    --slate-7: 54 69 97;
+    --slate-8: 74 90 118;
+    --slate-9: 100 115 140;
+    --slate-10: 120 134 158;
+    --slate-11: 154 168 188;
+    --slate-12: 230 237 245;
+
+    // Brand ramp (ALL blue)
+    --blue-1: 10 20 30;
+    --blue-2: 12 26 38;
+    --blue-3: 15 45 63;
+    --blue-4: 16 56 80;
+    --blue-5: 20 68 96;
+    --blue-6: 26 84 118;
+    --blue-7: 33 102 142;
+    --blue-8: 42 128 176;
+    --blue-9: 53 168 224;
+    --blue-10: 72 178 228;
+    --blue-11: 108 195 238;
+    --blue-12: 205 236 250;
+
+    // Status colors
+    --ruby-9: 242 107 107;
+    --ruby-11: 242 107 107;
+    --amber-9: 245 190 74;
+    --amber-11: 245 190 74;
+    --teal-9: 60 203 127;
+    --teal-11: 60 203 127;
+
+    // Surfaces
+    --background-color: 11 18 32;
+    --surface-1: 14 22 37;
+    --surface-2: 18 26 43;
+    --surface-active: 15 45 63;
+    --solid-1: 18 26 43;
+    --solid-2: 26 36 56;
+    --solid-3: 32 43 65;
+    --solid-active: 15 45 63;
+    --solid-blue: 15 45 63;
+    --solid-blue-2: 18 26 43;
+    --card-color: 18 26 43;
+    --button-color: 26 36 56;
+    --label-background: 26 36 56;
+
+    // Borders and text
+    --border-strong: 42 55 80;
+    --border-weak: 30 40 60;
+    --border-blue: 53, 168, 224, 0.5;
+    --border-blue-strong: 205 236 250;
+    --text-blue: 205 236 250;
+
+    --alpha-1: 26, 36, 56, 0.8;
+    --alpha-3: 18, 26, 43, 0.95;
+  }
+}
