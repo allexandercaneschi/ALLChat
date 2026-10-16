@@ -56,12 +56,13 @@ class ConversationRequest < ApplicationRecord
   end
 
   def accept!
-    conversation.with_lock do
-      reload
+    transaction do
+      locked_conversation = Conversation.lock.find(conversation_id)
+      lock!
       raise CustomExceptions::ConversationRequest::NotOpen.new({}) unless open?
-      raise CustomExceptions::ConversationRequest::Stale.new({}) if conversation.assignee_id != owner_id
+      raise CustomExceptions::ConversationRequest::Stale.new({}) if locked_conversation.assignee_id != owner_id
 
-      transfer? ? hand_over_conversation : add_participant
+      transfer? ? hand_over(locked_conversation) : add_participant(locked_conversation)
       update!(status: :accepted, responded_at: Time.current)
     end
   end
@@ -100,16 +101,17 @@ class ConversationRequest < ApplicationRecord
     transfer? ? requester_id : target_id
   end
 
-  def hand_over_conversation
-    Conversations::AssignmentService.new(conversation: conversation, assignee_id: target_id).perform
+  def hand_over(locked_conversation)
+    Conversations::AssignmentService.new(conversation: locked_conversation, assignee_id: target_id).perform
   end
 
-  def add_participant
-    conversation.conversation_participants.find_or_create_by!(user_id: requester_id)
+  def add_participant(locked_conversation)
+    locked_conversation.conversation_participants.find_or_create_by!(user_id: requester_id)
   end
 
   def close!(new_status)
-    with_lock do
+    transaction do
+      lock!
       raise CustomExceptions::ConversationRequest::NotOpen.new({}) unless pending?
 
       update!(status: new_status, responded_at: Time.current)

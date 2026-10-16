@@ -3,7 +3,8 @@ require 'rails_helper'
 RSpec.describe Macros::ExecutionService, type: :service do
   let(:account) { create(:account) }
   let(:conversation) { create(:conversation, account: account) }
-  let(:user) { create(:user, account: account) }
+  # ALLChat: an administrator runs these macros; agent restrictions are covered below.
+  let(:user) { create(:user, account: account, role: :administrator) }
   let(:macro) { create(:macro, account: account) }
   let(:service) { described_class.new(macro, conversation, user) }
 
@@ -173,6 +174,23 @@ RSpec.describe Macros::ExecutionService, type: :service do
     it 'sends a webhook event' do
       expect(WebhookJob).to receive(:perform_later)
       service.send(:send_webhook_event, ['https://example.com/webhook'])
+    end
+  end
+
+  describe 'ALLChat ownership rules for agents' do
+    let(:user) { create(:user, account: account, role: :agent) }
+    let(:other_user) { create(:user, account: account, role: :agent) }
+
+    it 'skips public messages on unassigned conversations' do
+      expect { service.send(:send_message, ['Hello']) }.not_to(change(Message, :count))
+    end
+
+    it 'does not assign the conversation to another agent' do
+      conversation.update!(assignee: user)
+
+      service.send(:assign_agent, [other_user.id])
+
+      expect(conversation.reload.assignee).to eq(user)
     end
   end
 end

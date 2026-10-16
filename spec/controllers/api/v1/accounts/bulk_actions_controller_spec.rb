@@ -36,6 +36,18 @@ RSpec.describe 'Api::V1::Accounts::BulkActionsController', type: :request do
 
       before do
         Conversation.all.find_each { |conversation| create(:inbox_member, inbox: conversation.inbox, user: agent) }
+        # ALLChat: only administrators and supervisors assign conversations to other agents
+        account.account_users.find_by(user: agent).update!(supervisor: true)
+      end
+
+      it 'does not let a plain agent assign conversations to someone else' do
+        account.account_users.find_by(user: agent).update!(supervisor: false)
+
+        post "/api/v1/accounts/#{account.id}/bulk_actions",
+             headers: agent.create_new_auth_token,
+             params: { type: 'Conversation', fields: { assignee_id: agent_1.id }, ids: Conversation.first(2).pluck(:display_id) }
+
+        expect(response).to have_http_status(:unprocessable_entity)
       end
 
       it 'Ignores bulk_actions for wrong type' do
