@@ -8,11 +8,11 @@ class ContactPolicy < ApplicationPolicy
   end
 
   def import?
-    @account_user.administrator?
+    @account_user.administrator_or_supervisor?
   end
 
   def export?
-    @account_user.administrator?
+    @account_user.administrator_or_supervisor?
   end
 
   def search?

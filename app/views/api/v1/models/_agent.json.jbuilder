@@ -9,6 +9,6 @@ json.provider resource.provider
 json.available_name resource.available_name
 json.custom_attributes resource.custom_attributes if resource.custom_attributes.present?
 json.name resource.name
-json.role resource.role
+json.role resource.current_account_user&.display_role
 json.thumbnail resource.avatar_url
 json.custom_role_id resource.current_account_user&.custom_role_id if ChatwootApp.enterprise?

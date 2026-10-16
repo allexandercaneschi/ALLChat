@@ -4,7 +4,7 @@ class PortalPolicy < ApplicationPolicy
   end
 
   def update?
-    @account_user.administrator?
+    @account_user.administrator_or_supervisor?
   end
 
   def show?
@@ -12,7 +12,7 @@ class PortalPolicy < ApplicationPolicy
   end
 
   def edit?
-    @account_user.administrator?
+    @account_user.administrator_or_supervisor?
   end
 
   def create?
@@ -24,7 +24,7 @@ class PortalPolicy < ApplicationPolicy
   end
 
   def logo?
-    @account_user.administrator?
+    @account_user.administrator_or_supervisor?
   end
 
   def send_instructions?

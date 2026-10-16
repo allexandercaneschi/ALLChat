@@ -10,7 +10,7 @@ class Api::V1::Accounts::AgentsController < Api::V1::Accounts::BaseController
     builder = AgentBuilder.new(
       email: new_agent_params['email'],
       name: new_agent_params['name'],
-      role: new_agent_params['role'],
+      role: role_attributes(new_agent_params['role'])[:role],
       availability: new_agent_params['availability'],
       auto_offline: new_agent_params['auto_offline'],
       inviter: current_user,
@@ -18,13 +18,16 @@ class Api::V1::Accounts::AgentsController < Api::V1::Accounts::BaseController
     )
 
     @agent = builder.perform
+    @agent.current_account_user.update!(supervisor: true) if new_agent_params['role'] == 'supervisor'
   rescue AgentBuilder::LimitExceededError => e
     render_payment_required(e.message)
   end
 
   def update
     @agent.update!(agent_params.slice(:name).compact)
-    @agent.current_account_user.update!(agent_params.slice(*account_user_attributes).compact)
+    @agent.current_account_user.update!(
+      agent_params.slice(*account_user_attributes).merge(role_attributes(agent_params[:role])).compact
+    )
   end
 
   def destroy
@@ -56,7 +59,14 @@ class Api::V1::Accounts::AgentsController < Api::V1::Accounts::BaseController
   end
 
   def account_user_attributes
-    [:role, :availability, :auto_offline]
+    [:availability, :auto_offline]
+  end
+
+  # ALLChat: "supervisor" is stored as the agent role plus the supervisor flag.
+  def role_attributes(role)
+    return {} if role.blank?
+
+    { role: role == 'supervisor' ? 'agent' : role, supervisor: role == 'supervisor' }
   end
 
   def allowed_agent_params

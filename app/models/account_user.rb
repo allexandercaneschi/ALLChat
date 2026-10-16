@@ -32,6 +32,11 @@ class AccountUser < ApplicationRecord
   belongs_to :inviter, class_name: 'User', optional: true
 
   enum role: { agent: 0, administrator: 1 }
+
+  # ALLChat: a supervisor is an agent with reports, contacts import/export and
+  # knowledge base access (same permission names as Enterprise custom roles),
+  # plus assignment and reply powers over other agents' conversations.
+  SUPERVISOR_PERMISSIONS = %w[conversation_manage contact_manage report_manage knowledge_base_manage].freeze
   enum availability: { online: 0, offline: 1, busy: 2 }
 
   accepts_nested_attributes_for :account
@@ -56,7 +61,24 @@ class AccountUser < ApplicationRecord
   end
 
   def permissions
-    administrator? ? ['administrator'] : ['agent']
+    return ['administrator'] if administrator?
+    return ['agent', 'supervisor', *SUPERVISOR_PERMISSIONS] if supervisor?
+
+    ['agent']
+  end
+
+  # ALLChat: true for roles above agent (reports, knowledge base, managing other agents' conversations).
+  def administrator_or_supervisor?
+    administrator? || supervisor?
+  end
+
+  def supervisor?
+    agent? && self[:supervisor]
+  end
+
+  # Role as shown in the agents list: agent, supervisor or administrator.
+  def display_role
+    supervisor? ? 'supervisor' : role
   end
 
   def push_event_data
