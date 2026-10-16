@@ -1,0 +1,99 @@
+# ALLChat: lint and test the fork's work branch.
+# Failures are reported as annotations so they can be read without logs.
+
+name: ALLChat - Specs
+
+on:
+  push:
+    branches:
+      - allchat
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rubocop:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+      - name: Rubocop
+        run: bundle exec rubocop --parallel --format github
+
+  backend-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ci_node_total: [8]
+        ci_node_index: [0, 1, 2, 3, 4, 5, 6, 7]
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ''
+          POSTGRES_DB: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --mount type=tmpfs,destination=/var/lib/postgresql/data
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:alpine
+        ports:
+          - 6379:6379
+        options: --entrypoint redis-server
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'pnpm'
+      - name: Install pnpm dependencies
+        run: pnpm i
+      - name: Strip enterprise code
+        run: |
+          rm -rf enterprise
+          rm -rf spec/enterprise
+      - name: Prepare database
+        run: |
+          bundle exec rake db:create
+          bundle exec rake db:schema:load
+      - name: Run backend tests
+        run: |
+          SPEC_FILES=($(find spec -name '*_spec.rb' | sort))
+          TESTS=""
+          for i in "${!SPEC_FILES[@]}"; do
+            if [ $(( i % ${{ matrix.ci_node_total }} )) -eq ${{ matrix.ci_node_index }} ]; then
+              TESTS="$TESTS ${SPEC_FILES[$i]}"
+            fi
+          done
+          bundle exec rspec --format progress --format json --out tmp/rspec_results.json $TESTS
+        env:
+          NODE_OPTIONS: --openssl-legacy-provider
+      - name: Report failures
+        if: failure()
+        run: |
+          ruby -rjson -e '
+            data = JSON.parse(File.read("tmp/rspec_results.json")) rescue exit(0)
+            failed = data["examples"].select { |e| e["status"] == "failed" }
+            levels = %w[error warning notice]
+            failed.first(30).each_with_index do |e, i|
+              msg = e.dig("exception", "message").to_s.gsub(/\s+/, " ")[0, 600]
+              text = "#{e["full_description"]} | #{e.dig("exception", "class")}: #{msg}"
+              puts "::#{levels[i / 10]} file=#{e["file_path"].sub(%r{^\./}, "")},line=#{e["line_number"]}::#{text}"
+            end
+            puts "::notice::#{failed.size} failed examples" if failed.size > 30
+          '
