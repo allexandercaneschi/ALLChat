@@ -39,6 +39,7 @@ class Macros::ExecutionService < ActionService
 
   def send_message(message)
     return if conversation_a_tweet?
+    return if @conversation.reload.assignee_id.blank?
 
     params = { content: message[0], private: false }
 
@@ -49,6 +50,7 @@ class Macros::ExecutionService < ActionService
 
   def send_attachment(blob_ids)
     return if conversation_a_tweet?
+    return if @conversation.reload.assignee_id.blank?
 
     return unless @macro.files.attached?
 

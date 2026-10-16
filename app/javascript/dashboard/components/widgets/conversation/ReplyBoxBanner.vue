@@ -29,11 +29,24 @@ const currentUser = useMapGetter('getCurrentUser');
 
 const assignedAgent = computed(() => currentChat.value?.meta?.assignee);
 
+// ALLChat: unassigned conversations always show the self-assign banner,
+// since public replies are locked until someone takes the conversation.
+const isUnassigned = computed(
+  () => currentChat.value?.meta?.assignee_type !== 'User'
+);
+
 const showSelfAssignBanner = computed(
   () =>
-    props.message !== '' &&
     !props.isOnPrivateNote &&
-    (!assignedAgent.value || assignedAgent.value.id !== currentUser.value?.id)
+    (isUnassigned.value ||
+      (props.message !== '' &&
+        assignedAgent.value?.id !== currentUser.value?.id))
+);
+
+const selfAssignBannerMessage = computed(() =>
+  isUnassigned.value
+    ? t('CONVERSATION.UNASSIGNED_ASSIGN_TO_REPLY')
+    : t('CONVERSATION.NOT_ASSIGNED_TO_YOU')
 );
 
 const showBotHandoffBanner = computed(
@@ -91,7 +104,7 @@ const onClickBotHandoff = async () => {
     action-button-variant="ghost"
     color-scheme="secondary"
     class="mx-2 mb-2 rounded-lg !py-2"
-    :banner-message="$t('CONVERSATION.NOT_ASSIGNED_TO_YOU')"
+    :banner-message="selfAssignBannerMessage"
     has-action-button
     :action-button-label="$t('CONVERSATION.ASSIGN_TO_ME')"
     @primary-action="onClickSelfAssign"

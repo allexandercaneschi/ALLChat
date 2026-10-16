@@ -301,6 +301,9 @@ export default {
       return this.$store.getters['inboxes/getInbox'](this.inboxId);
     },
     messagePlaceHolder() {
+      if (this.isReplyLockedUntilAssigned) {
+        return this.$t('CONVERSATION.FOOTER.ASSIGN_TO_REPLY');
+      }
       if (this.isEditorDisabled) {
         if (this.isAWhatsAppChannel) {
           return this.$t('CONVERSATION.FOOTER.MESSAGING_RESTRICTED_WHATSAPP');
@@ -523,7 +526,15 @@ export default {
     isDefaultEditorMode() {
       return !this.showAudioRecorderEditor && !this.copilot.isActive.value;
     },
+    // ALLChat: public replies stay locked until a human agent is assigned.
+    isReplyLockedUntilAssigned() {
+      return (
+        !this.isOnPrivateNote &&
+        this.currentChat?.meta?.assignee_type !== 'User'
+      );
+    },
     isEditorDisabled() {
+      if (this.isReplyLockedUntilAssigned) return true;
       return (
         (this.isAWhatsAppChannel || this.isAPIInbox) &&
         !this.isOnPrivateNote &&

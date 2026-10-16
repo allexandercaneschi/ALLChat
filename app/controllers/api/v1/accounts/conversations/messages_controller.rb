@@ -1,5 +1,6 @@
 class Api::V1::Accounts::Conversations::MessagesController < Api::V1::Accounts::Conversations::BaseController
   before_action :ensure_api_inbox, only: :update
+  before_action :ensure_reply_allowed, only: :create
 
   def index
     @messages = message_finder.perform
@@ -57,6 +58,16 @@ class Api::V1::Accounts::Conversations::MessagesController < Api::V1::Accounts::
   end
 
   private
+
+  # ALLChat: public replies from the dashboard require a human assignee.
+  # API tokens (bots, n8n) and private notes are not affected.
+  def ensure_reply_allowed
+    return if authenticate_by_access_token?
+    return if ActiveModel::Type::Boolean.new.cast(params[:private])
+    return if @conversation.assignee_id.present?
+
+    render_could_not_create_error(I18n.t('conversations.messages.reply_requires_assignment'))
+  end
 
   def message
     @message ||= @conversation.messages.find(permitted_params[:id])

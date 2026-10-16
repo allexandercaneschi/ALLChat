@@ -52,6 +52,7 @@
     "API_HOURS_WINDOW": "You can only reply to this conversation within {hours} hours",
     "NOT_ASSIGNED_TO_YOU": "This conversation is not assigned to you. Would you like to assign this conversation to yourself?",
     "ASSIGN_TO_ME": "Assign to me",
+    "UNASSIGNED_ASSIGN_TO_REPLY": "This conversation is not assigned. Assign it to yourself to reply.",
     "BOT_HANDOFF_MESSAGE": "This conversation is currently handled by {assigneeName}.",
     "BOT_HANDOFF_FALLBACK_ASSIGNEE": "an AI agent",
     "BOT_HANDOFF_ACTION": "Take over",
@@ -302,7 +303,8 @@
       "MESSAGE_SIGNATURE_NOT_CONFIGURED": "Message signature is not configured, please configure it in profile settings.",
       "COPILOT_MSG_INPUT": "Give copilot additional prompts, or ask anything else... Press enter to send follow-up",
       "CLICK_HERE": "Click here to update",
-      "WHATSAPP_TEMPLATES": "Whatsapp Templates"
+      "WHATSAPP_TEMPLATES": "Whatsapp Templates",
+      "ASSIGN_TO_REPLY": "Assign the conversation to yourself to reply"
     },
     "REPLYBOX": {
       "REPLY": "Reply",

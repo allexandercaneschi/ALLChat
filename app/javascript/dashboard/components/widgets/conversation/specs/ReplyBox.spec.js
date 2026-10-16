@@ -29,7 +29,7 @@ const REPLIABLE = {
   inbox_id: 1,
   can_reply: true,
   status: 'open',
-  meta: { sender: { id: 2 } },
+  meta: { sender: { id: 2 }, assignee: { id: 7 }, assignee_type: 'User' },
   messages: [],
 };
 
@@ -180,6 +180,36 @@ describe('ReplyBox', () => {
       Object.entries(drafts).forEach(([key, message]) => {
         expect(store.getters['draftMessages/get'](key)).toBe(message);
       });
+    });
+  });
+
+  describe('assignment lock', () => {
+    const inbox = { channel_type: 'Channel::WebWidget' };
+
+    it('keeps the reply tab but disables it until a human is assigned', async () => {
+      const { wrapper } = mountWith({
+        inbox,
+        chat: { meta: { sender: { id: 2 } } },
+      });
+      await nextTick();
+
+      expect(topPanel(wrapper).mode).toBe(REPLY_EDITOR_MODES.REPLY);
+      expect(topPanel(wrapper).isEditorDisabled).toBe(true);
+      expect(editor(wrapper).placeholder).toBe(
+        'CONVERSATION.FOOTER.ASSIGN_TO_REPLY'
+      );
+      expect(bottomPanel(wrapper).isSendDisabled).toBe(true);
+    });
+
+    it('allows private notes on an unassigned conversation', async () => {
+      const { wrapper } = mountWith({
+        inbox,
+        chat: { meta: { sender: { id: 2 } } },
+      });
+      wrapper.vm.setReplyMode(REPLY_EDITOR_MODES.NOTE);
+      await nextTick();
+
+      expect(topPanel(wrapper).isEditorDisabled).toBe(false);
     });
   });
 

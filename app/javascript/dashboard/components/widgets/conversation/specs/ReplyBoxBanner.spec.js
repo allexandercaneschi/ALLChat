@@ -87,4 +87,30 @@ describe('ReplyBoxBanner', () => {
       });
     }
   );
+
+  it.each([
+    [{}, 'CONVERSATION.UNASSIGNED_ASSIGN_TO_REPLY'],
+    [{ assignee: { id: 3 }, assignee_type: 'User' }, null],
+  ])(
+    'shows the self-assign banner without typing only when unassigned (%o)',
+    (meta, expectedMessage) => {
+      const store = createStore({
+        state: { chat: { id: 1, status: 'open', meta } },
+        getters: {
+          getSelectedChat: state => state.chat,
+          getCurrentUser: () => currentUser,
+        },
+      });
+      const wrapper = shallowMount(ReplyBoxBanner, {
+        global: { plugins: [store], mocks: { $t: key => key } },
+      });
+
+      const banner = wrapper.findComponent(Banner);
+      if (!expectedMessage) {
+        expect(banner.exists()).toBe(false);
+        return;
+      }
+      expect(banner.props('bannerMessage')).toBe(expectedMessage);
+    }
+  );
 });

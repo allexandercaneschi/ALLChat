@@ -43,6 +43,7 @@
     "API_HOURS_WINDOW": "Você só pode responder a esta conversa em {hours} horas",
     "NOT_ASSIGNED_TO_YOU": "Esta conversa não está atribuída a você. Gostaria de atribuir esta conversa a você mesmo?",
     "ASSIGN_TO_ME": "Atribuir a mim",
+    "UNASSIGNED_ASSIGN_TO_REPLY": "Esta conversa não está atribuída. Atribua a você para responder.",
     "BOT_HANDOFF_MESSAGE": "Esta conversa está sendo atendida por {assigneeName}.",
     "BOT_HANDOFF_FALLBACK_ASSIGNEE": "um bot",
     "BOT_HANDOFF_ACTION": "Assumir atendimento",
@@ -274,7 +275,8 @@
       "MESSAGE_SIGNATURE_NOT_CONFIGURED": "A assinatura da mensagem não está configurada. Por favor, configure-a nas configurações do perfil.",
       "COPILOT_MSG_INPUT": "Forneça instruções adicionais ao Copiloto ou pergunte algo mais... Pressione Enter para enviar",
       "CLICK_HERE": "Clique aqui para atualizar",
-      "WHATSAPP_TEMPLATES": "Modelos do Whatsapp"
+      "WHATSAPP_TEMPLATES": "Modelos do Whatsapp",
+      "ASSIGN_TO_REPLY": "Atribua a conversa a você para responder"
     },
     "REPLYBOX": {
       "REPLY": "Responder",
