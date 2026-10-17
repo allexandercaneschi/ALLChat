@@ -4,7 +4,8 @@
   <meta charset="utf-8">
   <meta name="robots" content="noindex">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title><%= content_for(:title) %> - <%= application_title %></title>
+  <title><%= content_for(:title) %> - <%= GlobalConfig.get('INSTALLATION_NAME')['INSTALLATION_NAME'] %></title>
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <%= render "theme" %>
   <%= render "font_preload", file: "Inter/InterVariable.woff2" %>
   <%= render "stylesheet" %>
