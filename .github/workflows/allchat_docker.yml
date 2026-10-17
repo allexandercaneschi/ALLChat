@@ -1,5 +1,9 @@
 # ALLChat: builds the fork's Docker image and publishes it to GitHub Container Registry.
-# Image: ghcr.io/<owner>/allchat:<branch>  (also :sha-<commit>)
+#
+# - push to feat/** or all/**  -> ghcr.io/<owner>/allchat:<branch> and :sha-<commit>  (testing)
+# - push of a tag v*            -> ghcr.io/<owner>/allchat:<version>, :latest and :sha-<commit>  (production)
+#
+# Production uses :latest, so it only changes when a version tag is published.
 
 name: ALLChat - Docker image
 
@@ -8,6 +12,12 @@ on:
     branches:
       - 'feat/**'
       - 'all/**'
+    paths-ignore:
+      - '.github/**'
+      - 'deploy/**'
+      - 'spec/**'
+    tags:
+      - 'v*'
   workflow_dispatch:
 
 permissions:
@@ -25,8 +35,11 @@ jobs:
         run: |
           IMAGE="ghcr.io/$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')/allchat"
           REF_TAG=$(echo '${{ github.ref_name }}' | sed 's/\//-/g')
-          echo "IMAGE=${IMAGE}" >> "$GITHUB_ENV"
-          echo "TAGS=${IMAGE}:${REF_TAG},${IMAGE}:sha-${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+          TAGS="${IMAGE}:${REF_TAG},${IMAGE}:sha-${GITHUB_SHA::7}"
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            TAGS="${TAGS},${IMAGE}:latest"
+          fi
+          echo "TAGS=${TAGS}" >> "$GITHUB_ENV"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
