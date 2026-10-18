@@ -237,7 +237,7 @@
   },
   "GOOGLE_CONTACTS_SYNC": {
     "TITLE": "Google Contatos",
-    "NOTE": "Sincronização nos dois sentidos com uma conta Google a cada hora, casando os contatos pelo telefone. Os números de WhatsApp ficam sem o 9 aqui e com o 9 no Google. Se os dois lados mudarem, vale o Google. Exclusões não são espelhadas.",
+    "NOTE": "Sincronização nos dois sentidos com uma conta Google a cada hora, casando os contatos pelo telefone. Os números de WhatsApp ficam sem o 9 aqui e com o 9 no Google. Campo vazio não apaga o do outro lado. Exclusões não são espelhadas.",
     "NOT_CONFIGURED": "Defina GOOGLE_CONTACTS_CLIENT_ID e GOOGLE_CONTACTS_CLIENT_SECRET no servidor para ativar a sincronização. URI de redirecionamento autorizado do cliente OAuth no Google: {uri}",
     "CONNECT": "Conectar conta Google",
     "CONNECTED_AS": "Conectado como {email}",
@@ -255,10 +255,34 @@
       "UPDATE_GOOGLE": "Atualizados no Google",
       "UPDATE_CHATWOOT": "Atualizados aqui",
       "DUPLICATES": "Telefones em mais de um contato (ignorados)",
-      "INVALID_PHONES": "Telefones ilegíveis (ignorados)"
+      "INVALID_PHONES": "Telefones ilegíveis (ignorados)",
+      "CONFLICTS": "Conflitos"
     },
     "ERROR": "Último erro: {error}",
     "API_ERROR": "Não foi possível atualizar a sincronização com o Google Contatos",
-    "CONFIRM_DISCONNECT": "Desconectar a conta Google? Os contatos já sincronizados continuam onde estão."
+    "CONFIRM_DISCONNECT": "Desconectar a conta Google? Os contatos já sincronizados continuam onde estão.",
+    "CONFLICT_WINNER": "Em conflito, prevalece",
+    "CONFLICT_WINNER_HELP": "Vale quando o contato difere na primeira vez que é casado ou quando os dois lados mudaram desde a última sincronização.",
+    "SIDES": {
+      "CHATWOOT": "ALLChat",
+      "GOOGLE": "Google",
+      "NEWEST": "O mais recente"
+    },
+    "SYNCING": "Sincronizando…",
+    "APPLY_NOW": "Aplicar agora",
+    "CONFIRM_APPLY": "Gravar agora as mudanças, mesmo com o modo simulação ligado?\n\nNa última simulação:\nNovos no Google: {createGoogle}\nNovos aqui: {createChatwoot}\nAtualizados no Google: {updateGoogle}\nAtualizados aqui: {updateChatwoot}\n\nRecomendado: exporte os contatos do Google antes (Google Contatos → Exportar).",
+    "REVIEW_CONFLICTS": "Revisar conflitos ({count})",
+    "HIDE_CONFLICTS": "Ocultar conflitos",
+    "ALL_CHATWOOT": "Todos ALLChat",
+    "ALL_GOOGLE": "Todos Google",
+    "CLEAR_CHOICES": "Seguir a regra",
+    "CONFLICTS_HELP": "Clique no lado que deve prevalecer em cada contato. As escolhas valem na próxima gravação e depois são descartadas.",
+    "CONFLICTS_TRUNCATED": "Mostrando {shown} de {total} conflitos. Os demais seguem a regra.",
+    "CHOSEN": "Escolhido",
+    "BY_RULE": "Pela regra",
+    "PREVAILS": "{side} · prevalece",
+    "NO_NAME": "Sem nome",
+    "NO_EMAIL": "Sem e-mail",
+    "SAVE_CHOICES": "Salvar escolhas e simular"
   }
 }

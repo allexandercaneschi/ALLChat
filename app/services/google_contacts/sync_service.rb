@@ -3,26 +3,36 @@
 # - Contacts match by phone (GoogleContacts::PhoneNumber key).
 # - Contacts that exist on one side only are created on the other side.
 #   New Google contacts get the "Chatwoot" label.
-# - For linked contacts, the side that changed since the last sync wins;
-#   when both changed, Google wins. Only name and email are synced after the
-#   first match, phones are never rewritten.
+# - For linked contacts, the side that changed since the last sync wins.
+# - A conflict is a first match whose data differ, or a linked pair where both
+#   sides changed. The winner comes from the per-contact choice made on the
+#   settings screen, else from the account rule (google, chatwoot or newest).
+# - Only name and email are synced after the first match, phones are never
+#   rewritten. A blank field never erases the other side's value.
 # - Deletions are not mirrored: a link whose contact disappeared on one side
 #   is left alone.
-# - In dry run nothing is written; the summary lists what would happen.
+# - In dry run nothing is written; the summary lists what would happen,
+#   including every conflict so it can be reviewed contact by contact.
+#   `apply: true` writes once even when the connection is in dry run.
 class GoogleContacts::SyncService
-  SAMPLE_SIZE = 50
+  include GoogleContacts::PersonFields
 
-  def initialize(connection)
+  SAMPLE_SIZE = 50
+  CONFLICT_LIMIT = 500
+
+  def initialize(connection, apply: false)
     @connection = connection
     @account = connection.account
     @client = GoogleContacts::Client.new(connection)
+    @write = apply || !connection.dry_run
     @summary = Hash.new { |hash, key| hash[key] = [] }
     @duplicate_keys = Set.new
+    @updated_people = {}
   end
 
   def perform
     plan
-    apply unless @connection.dry_run
+    apply if @write
     finish
   rescue StandardError => e
     @connection.update!(last_error: e.message.truncate(500), last_synced_at: Time.current)
@@ -36,6 +46,7 @@ class GoogleContacts::SyncService
     @chatwoot = index_chatwoot_contacts
     @links = GoogleContactLink.where(account_id: @account.id).index_by(&:phone_key)
     @actions = { create_google: [], create_chatwoot: [], update_google: [], update_chatwoot: [], link: [] }
+    @conflicts = []
 
     (@google.keys | @chatwoot.keys).each { |key| plan_key(key) }
   end
@@ -51,8 +62,7 @@ class GoogleContacts::SyncService
     return @actions[:create_chatwoot] << [key, person] if contact.nil?
     return @actions[:create_google] << [key, contact] if person.nil?
 
-    # First match: Google wins.
-    @actions[:update_chatwoot] << [key, person, contact] if fingerprint_google(person) != fingerprint_contact(contact)
+    plan_conflict(key, person, contact, nil) if fingerprint_google(person) != fingerprint_contact(contact)
     @actions[:link] << [key, person, contact]
   end
 
@@ -60,12 +70,36 @@ class GoogleContacts::SyncService
     # Deleted on one side since the last sync: deletions are not mirrored.
     return if person.nil? || contact.nil?
 
-    if fingerprint_google(person) != link.google_hash
+    google_changed = fingerprint_google(person) != link.google_hash
+    chatwoot_changed = fingerprint_contact(contact) != link.chatwoot_hash
+
+    if google_changed && chatwoot_changed
+      plan_conflict(key, person, contact, link)
+    elsif google_changed
       @actions[:update_chatwoot] << [key, person, contact]
-    elsif fingerprint_contact(contact) != link.chatwoot_hash
+    elsif chatwoot_changed
       @actions[:update_google] << [key, person, contact]
     end
     @actions[:link] << [key, person, contact]
+  end
+
+  def plan_conflict(key, person, contact, link)
+    choice = @connection.conflict_overrides[key]
+    winner = choice || rule_winner(person, contact, link)
+    @actions[winner == 'google' ? :update_chatwoot : :update_google] << [key, person, contact]
+    @conflicts << {
+      key: key, phone: contact.phone_number, winner: winner, chosen: choice.present?,
+      chatwoot: { name: contact.name, email: contact.email.presence },
+      google: { name: person_name(person), email: person_email(person) }
+    }
+  end
+
+  def rule_winner(person, contact, link)
+    return @connection.conflict_winner unless @connection.conflict_winner == 'newest'
+
+    google_time = google_updated_at(person)
+    chatwoot_time = link ? link.chatwoot_changed_at || link.updated_at : contact.updated_at
+    google_time.nil? || google_time >= chatwoot_time ? 'google' : 'chatwoot'
   end
 
   def apply
@@ -110,34 +144,45 @@ class GoogleContacts::SyncService
 
   def update_google
     updates = @actions[:update_google].to_h do |_key, person, contact|
-      [person['resourceName'], { etag: person['etag'], names: [{ unstructuredName: contact.name }],
-                                 emailAddresses: contact.email.present? ? [{ value: contact.email }] : [] }]
+      email = contact.email.presence || person_email(person)
+      [person['resourceName'], { etag: person['etag'], names: [{ unstructuredName: contact.name.presence || person_name(person) }],
+                                 emailAddresses: email ? [{ value: email }] : [] }]
     end
-    @client.update_people(updates) if updates.any?
+    @updated_people = @client.update_people(updates) if updates.any?
   end
 
   def save_links
     @actions[:link].each do |key, person, contact|
+      person = @updated_people[person['resourceName']] || person
       link = GoogleContactLink.find_or_initialize_by(account_id: @account.id, phone_key: key)
-      link.update!(contact_id: contact.id, resource_name: person['resourceName'],
+      link.update!(contact_id: contact.id, resource_name: person['resourceName'], chatwoot_changed_at: nil,
                    google_hash: fingerprint_google(person), chatwoot_hash: fingerprint_contact(contact.reload))
     end
   end
 
   def finish
     summary = {
-      dry_run: @connection.dry_run,
+      dry_run: !@write,
       counts: @actions.except(:link).transform_values(&:size),
-      samples: {
-        create_google: @actions[:create_google].first(SAMPLE_SIZE).map { |_key, contact| describe_contact(contact) },
-        create_chatwoot: @actions[:create_chatwoot].first(SAMPLE_SIZE).map { |_key, person| describe_person(person) },
-        update_google: @actions[:update_google].first(SAMPLE_SIZE).map { |_key, _person, contact| describe_contact(contact) },
-        update_chatwoot: @actions[:update_chatwoot].first(SAMPLE_SIZE).map { |_key, person, _contact| describe_person(person) }
-      },
+      samples: samples,
+      conflicts: @conflicts.first(CONFLICT_LIMIT),
+      conflict_count: @conflicts.size,
       duplicates: @summary[:duplicates].first(SAMPLE_SIZE),
       invalid_phones: @summary[:invalid_phones].first(SAMPLE_SIZE)
     }
-    @connection.update!(last_sync_summary: summary, last_error: nil, last_synced_at: Time.current)
+    attributes = { last_sync_summary: summary, last_error: nil, last_synced_at: Time.current }
+    # Choices are consumed by the run that writes them.
+    attributes[:conflict_overrides] = {} if @write
+    @connection.update!(attributes)
+  end
+
+  def samples
+    {
+      create_google: @actions[:create_google].first(SAMPLE_SIZE).map { |_key, contact| describe_contact(contact) },
+      create_chatwoot: @actions[:create_chatwoot].first(SAMPLE_SIZE).map { |_key, person| describe_person(person) },
+      update_google: @actions[:update_google].first(SAMPLE_SIZE).map { |_key, _person, contact| describe_contact(contact) },
+      update_chatwoot: @actions[:update_chatwoot].first(SAMPLE_SIZE).map { |_key, person, _contact| describe_person(person) }
+    }
   end
 
   def index_google_people
@@ -168,49 +213,11 @@ class GoogleContacts::SyncService
     end
   end
 
-  def google_person(contact, group)
-    {
-      names: [{ unstructuredName: contact.name }],
-      phoneNumbers: [{ value: GoogleContacts::PhoneNumber.parse(contact.phone_number).google_format }],
-      emailAddresses: contact.email.present? ? [{ value: contact.email }] : [],
-      memberships: [{ contactGroupMembership: { contactGroupResourceName: group } }]
-    }
-  end
-
-  def phone_for(person)
-    person['phoneNumbers'].to_a.lazy.filter_map { |phone| GoogleContacts::PhoneNumber.parse(phone['value']) }.first
-  end
-
-  def person_name(person)
-    name = person['names'].to_a.first || {}
-    (name['unstructuredName'] || name['displayName']).to_s.strip
-  end
-
-  def person_email(person)
-    person['emailAddresses'].to_a.first&.dig('value').to_s.strip.downcase.presence
-  end
-
   # Chatwoot keeps emails unique per account; skip an email another contact already uses.
   def available_email(email, contact = nil)
     return if email.blank?
     return email if contact&.email.to_s.casecmp?(email)
 
     @account.contacts.where('LOWER(email) = ?', email).where.not(id: contact&.id).exists? ? nil : email
-  end
-
-  def fingerprint_google(person)
-    Digest::SHA1.hexdigest([person_name(person), person_email(person).to_s].join("\u0000"))
-  end
-
-  def fingerprint_contact(contact)
-    Digest::SHA1.hexdigest([contact.name.to_s.strip, contact.email.to_s.strip.downcase].join("\u0000"))
-  end
-
-  def describe_contact(contact)
-    { name: contact.name, phone: contact.phone_number }
-  end
-
-  def describe_person(person)
-    { name: person_name(person), phone: person['phoneNumbers'].to_a.first&.dig('value') }
   end
 end

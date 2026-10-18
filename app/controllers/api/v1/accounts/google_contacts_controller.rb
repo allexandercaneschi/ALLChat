@@ -24,12 +24,12 @@ class Api::V1::Accounts::GoogleContactsController < Api::V1::Accounts::BaseContr
   end
 
   def update
-    connection!.update!(params.permit(:dry_run, :enabled))
+    connection!.update!(params.permit(:dry_run, :enabled, :conflict_winner, conflict_overrides: {}))
     render json: connection.as_json
   end
 
   def sync
-    GoogleContacts::SyncJob.perform_later(connection!)
+    GoogleContacts::SyncJob.perform_later(connection!, apply: ActiveModel::Type::Boolean.new.cast(params[:apply]) || false)
     head :accepted
   end
 
