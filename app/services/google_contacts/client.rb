@@ -32,7 +32,7 @@ class GoogleContacts::Client
 
   # Returns the updated people by resource name.
   def update_people(persons_by_resource_name)
-    persons_by_resource_name.each_slice(BATCH_SIZE).each_with_object({}) do |batch, updated|
+    persons_by_resource_name.each_slice(BATCH_SIZE).with_object({}) do |batch, updated|
       body = post('people:batchUpdateContacts', { contacts: batch.to_h, updateMask: UPDATE_FIELDS, readMask: PERSON_FIELDS })
       body['updateResult'].to_h.each { |resource_name, result| updated[resource_name] = result['person'] }
     end

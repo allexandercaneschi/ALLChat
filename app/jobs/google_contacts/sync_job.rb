@@ -4,7 +4,7 @@ class GoogleContacts::SyncJob < ApplicationJob
 
   # apply: write this run even when the connection is in dry run.
   def perform(connection, apply: false)
-    return unless connection.refresh_token.present?
+    return if connection.refresh_token.blank?
     return unless connection.enabled? || apply
 
     GoogleContacts::SyncService.new(connection, apply: apply).perform
