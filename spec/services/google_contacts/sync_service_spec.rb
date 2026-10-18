@@ -97,7 +97,7 @@ RSpec.describe GoogleContacts::SyncService do
     end
 
     it 'follows the choice made for one contact over the rule and clears it after writing' do
-      connection.update!(conflict_winner: 'google', conflict_overrides: { '5527998765432' => 'chatwoot' })
+      connection.update!(conflict_winner: 'google', conflict_overrides: { '552798765432' => 'chatwoot' })
 
       described_class.new(connection).perform
 
@@ -107,18 +107,18 @@ RSpec.describe GoogleContacts::SyncService do
     end
 
     it 'lists the conflicts in dry run with both sides and keeps the choices' do
-      connection.update!(dry_run: true, conflict_overrides: { '5527998765432' => 'chatwoot' })
+      connection.update!(dry_run: true, conflict_overrides: { '552798765432' => 'chatwoot' })
 
       described_class.new(connection).perform
 
       summary = connection.reload.last_sync_summary
       expect(summary['conflicts']).to contain_exactly(
-        hash_including('key' => '5527998765432', 'winner' => 'chatwoot', 'chosen' => true,
+        hash_including('key' => '552798765432', 'winner' => 'chatwoot', 'chosen' => true,
                        'chatwoot' => { 'name' => 'Maria Lara', 'email' => 'maria@lara.com' },
                        'google' => { 'name' => 'Maria', 'email' => nil })
       )
       expect(summary['counts']).to include('update_google' => 1, 'update_chatwoot' => 0)
-      expect(connection.conflict_overrides).to eq('5527998765432' => 'chatwoot')
+      expect(connection.conflict_overrides).to eq('552798765432' => 'chatwoot')
     end
 
     it 'writes once when asked to apply while in dry run' do

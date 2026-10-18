@@ -11,6 +11,9 @@ module GoogleContactChangeTracking
   private
 
   def mark_google_contact_link_changed
+    # A timestamp mark only; skipping link validations and callbacks is intended.
+    # rubocop:disable Rails/SkipsModelValidations
     GoogleContactLink.where(account_id: account_id, contact_id: id).update_all(chatwoot_changed_at: Time.current)
+    # rubocop:enable Rails/SkipsModelValidations
   end
 end
