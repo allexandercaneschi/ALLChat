@@ -37,6 +37,29 @@ RSpec.describe GoogleContacts::SyncService do
     expect(GoogleContactLink.where(account_id: account.id).count).to eq(2)
   end
 
+  it 'imports Google contacts saved with the trunk 0 in E.164' do
+    allow(client).to receive(:people).and_return([person('people/1', 'Antigo', '(032) 99999-8888')])
+
+    described_class.new(connection).perform
+
+    expect(account.contacts.find_by(phone_number: '+553299998888').name).to eq('Antigo')
+    expect(connection.reload.last_error).to be_nil
+  end
+
+  it 'skips a contact Chatwoot refuses to save and keeps syncing the others' do
+    allow(client).to receive(:people).and_return([person('people/1', 'Ruim', '+5532999998888'),
+                                                  person('people/2', 'Bom', '+5527991112222')])
+    allow(GoogleContacts::PhoneNumber).to receive(:parse).and_call_original
+    allow(GoogleContacts::PhoneNumber).to receive(:parse).with('+5532999998888')
+                                                         .and_return(instance_double(GoogleContacts::PhoneNumber, key: '553299998888', chatwoot_format: '+0123'))
+
+    described_class.new(connection).perform
+
+    expect(account.contacts.find_by(phone_number: '+552791112222')).to be_present
+    expect(connection.reload.last_error).to be_nil
+    expect(connection.last_sync_summary['invalid_phones'].first['name']).to eq('Ruim')
+  end
+
   it 'matches contacts by phone and lets Google win on the first match' do
     contact = create(:contact, account: account, name: 'Maria', phone_number: '+552798765432')
     allow(client).to receive(:people).and_return([person('people/1', 'Maria Lara', '+5527998765432')])

@@ -14,6 +14,8 @@
 # - In dry run nothing is written; the summary lists what would happen,
 #   including every conflict so it can be reviewed contact by contact.
 #   `apply: true` writes once even when the connection is in dry run.
+# - A contact Chatwoot refuses to save (e.g. invalid phone) is skipped and
+#   listed under invalid_phones instead of aborting the whole sync.
 class GoogleContacts::SyncService
   include GoogleContacts::PersonFields
 
@@ -118,6 +120,8 @@ class GoogleContacts::SyncService
         email: available_email(person_email(person))
       )
       @actions[:link] << [key, person, contact]
+    rescue ActiveRecord::RecordInvalid => e
+      skip_record(:google, person_name(person), person['phoneNumbers'].to_a.first&.dig('value'), e)
     end
   end
 
@@ -139,6 +143,9 @@ class GoogleContacts::SyncService
       email = person_email(person)
       attributes[:email] = available_email(email, contact) if email.present?
       contact.update!(attributes.compact)
+    rescue ActiveRecord::RecordInvalid => e
+      skip_record(:chatwoot, contact.name, contact.phone_number, e)
+      @actions[:link].reject! { |_k, _p, linked| linked == contact }
     end
   end
 
@@ -211,6 +218,10 @@ class GoogleContacts::SyncService
 
       result[key] = list.first
     end
+  end
+
+  def skip_record(side, name, phone, error)
+    @summary[:invalid_phones] << { side: side, name: name, phone: phone, error: error.record.errors.full_messages.to_sentence }
   end
 
   # Chatwoot keeps emails unique per account; skip an email another contact already uses.
