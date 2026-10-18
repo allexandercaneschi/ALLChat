@@ -49,9 +49,9 @@ RSpec.describe GoogleContacts::SyncService do
   it 'skips a contact Chatwoot refuses to save and keeps syncing the others' do
     allow(client).to receive(:people).and_return([person('people/1', 'Ruim', '+5532999998888'),
                                                   person('people/2', 'Bom', '+5527991112222')])
+    refused = instance_double(GoogleContacts::PhoneNumber, key: '553299998888', chatwoot_format: '+0123')
     allow(GoogleContacts::PhoneNumber).to receive(:parse).and_call_original
-    allow(GoogleContacts::PhoneNumber).to receive(:parse).with('+5532999998888')
-                                                         .and_return(instance_double(GoogleContacts::PhoneNumber, key: '553299998888', chatwoot_format: '+0123'))
+    allow(GoogleContacts::PhoneNumber).to receive(:parse).with('+5532999998888').and_return(refused)
 
     described_class.new(connection).perform
 
