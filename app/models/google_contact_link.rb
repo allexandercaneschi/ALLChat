@@ -3,6 +3,7 @@
 # Table name: google_contact_links
 #
 #  id            :bigint           not null, primary key
+#  chatwoot_changed_at :datetime
 #  chatwoot_hash :string
 #  google_hash   :string
 #  phone_key     :string           not null

@@ -15,8 +15,9 @@ class GoogleContactsAPI extends ApiClient {
     return axios.post(`${this.url}/authorization`);
   }
 
-  sync() {
-    return axios.post(`${this.url}/sync`);
+  // apply: write this run even when the sync is in simulation mode.
+  sync({ apply = false } = {}) {
+    return axios.post(`${this.url}/sync`, { apply });
   }
 
   disconnect() {

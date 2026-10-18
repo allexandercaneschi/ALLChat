@@ -246,7 +246,7 @@
   },
   "GOOGLE_CONTACTS_SYNC": {
     "TITLE": "Google Contacts",
-    "NOTE": "Two-way sync with a Google account every hour, matching contacts by phone. WhatsApp numbers stay without the 9th digit here and get it on Google. When both sides changed, Google wins. Deletions are not mirrored.",
+    "NOTE": "Two-way hourly sync with a Google account, matching contacts by phone. WhatsApp numbers stay without the 9th digit here and get it on Google. A blank field never erases the other side. Deletions are not mirrored.",
     "NOT_CONFIGURED": "Set GOOGLE_CONTACTS_CLIENT_ID and GOOGLE_CONTACTS_CLIENT_SECRET on the server to enable the sync. Authorized redirect URI for the Google OAuth client: {uri}",
     "CONNECT": "Connect Google account",
     "CONNECTED_AS": "Connected as {email}",
@@ -264,10 +264,34 @@
       "UPDATE_GOOGLE": "Updated on Google",
       "UPDATE_CHATWOOT": "Updated here",
       "DUPLICATES": "Phones on more than one contact (skipped)",
-      "INVALID_PHONES": "Unreadable phones (skipped)"
+      "INVALID_PHONES": "Unreadable phones (skipped)",
+      "CONFLICTS": "Conflicts"
     },
     "ERROR": "Last error: {error}",
     "API_ERROR": "Could not update the Google Contacts sync",
-    "CONFIRM_DISCONNECT": "Disconnect the Google account? Contacts already synced stay where they are."
+    "CONFIRM_DISCONNECT": "Disconnect the Google account? Contacts already synced stay where they are.",
+    "CONFLICT_WINNER": "On conflict, keep",
+    "CONFLICT_WINNER_HELP": "Applies when a contact differs the first time it is matched or when both sides changed since the last sync.",
+    "SIDES": {
+      "CHATWOOT": "ALLChat",
+      "GOOGLE": "Google",
+      "NEWEST": "The newest"
+    },
+    "SYNCING": "Syncing…",
+    "APPLY_NOW": "Apply now",
+    "CONFIRM_APPLY": "Write the changes now, even with simulation mode on?\n\nIn the last simulation:\nNew on Google: {createGoogle}\nNew here: {createChatwoot}\nUpdated on Google: {updateGoogle}\nUpdated here: {updateChatwoot}\n\nRecommended: export your Google contacts first (Google Contacts → Export).",
+    "REVIEW_CONFLICTS": "Review conflicts ({count})",
+    "HIDE_CONFLICTS": "Hide conflicts",
+    "ALL_CHATWOOT": "All ALLChat",
+    "ALL_GOOGLE": "All Google",
+    "CLEAR_CHOICES": "Follow the rule",
+    "CONFLICTS_HELP": "Click the side that should win for each contact. Choices apply to the next write and are then discarded.",
+    "CONFLICTS_TRUNCATED": "Showing {shown} of {total} conflicts. The rest follow the rule.",
+    "CHOSEN": "Chosen",
+    "BY_RULE": "By rule",
+    "PREVAILS": "{side} · wins",
+    "NO_NAME": "No name",
+    "NO_EMAIL": "No email",
+    "SAVE_CHOICES": "Save choices and simulate"
   }
 }

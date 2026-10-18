@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_10_16_170247) do
+ActiveRecord::Schema[7.1].define(version: 2026_10_17_235900) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -1254,6 +1254,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_16_170247) do
     t.string "chatwoot_hash"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "chatwoot_changed_at"
     t.index ["account_id", "contact_id"], name: "index_google_contact_links_on_account_id_and_contact_id"
     t.index ["account_id", "phone_key"], name: "index_google_contact_links_on_account_id_and_phone_key", unique: true
   end
@@ -1272,6 +1273,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_16_170247) do
     t.text "last_error"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "conflict_winner", default: "google", null: false
+    t.jsonb "conflict_overrides", default: {}, null: false
     t.index ["account_id"], name: "index_google_contacts_connections_on_account_id", unique: true
   end
 
