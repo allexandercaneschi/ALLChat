@@ -14,6 +14,8 @@
 # - In dry run nothing is written; the summary lists what would happen,
 #   including every conflict so it can be reviewed contact by contact.
 #   `apply: true` writes once even when the connection is in dry run.
+# - A Google contact Chatwoot refuses to create (e.g. invalid phone) is skipped and
+#   listed under invalid_phones instead of aborting the whole sync.
 class GoogleContacts::SyncService
   include GoogleContacts::PersonFields
 
@@ -118,6 +120,8 @@ class GoogleContacts::SyncService
         email: available_email(person_email(person))
       )
       @actions[:link] << [key, person, contact]
+    rescue ActiveRecord::RecordInvalid => e
+      @summary[:invalid_phones] << { side: :google, name: person_name(person), error: e.record.errors.full_messages.to_sentence }
     end
   end
 
