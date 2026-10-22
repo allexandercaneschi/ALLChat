@@ -6,10 +6,27 @@ class DeviseOverrides::OmniauthCallbacksController < DeviseTokenAuth::OmniauthCa
   def omniauth_success
     get_resource_from_auth_hash
 
-    @resource.present? ? sign_in_user(redirect_url: oauth_redirect_url, sso_account_id: oauth_context['sso_account_id']) : sign_up_user
+    return sign_in_user(redirect_url: oauth_redirect_url, sso_account_id: oauth_context['sso_account_id']) if @resource.present?
+    return sign_in_new_oidc_user if auth_hash['provider'] == 'oidc'
+
+    sign_up_user
+  end
+
+  def omniauth_failure
+    return super unless params[:strategy] == 'oidc'
+
+    redirect_to login_page_url(error: 'oidc-failed')
   end
 
   private
+
+  # ALLChat: Authentik users join the existing account instead of signing up a new one.
+  def sign_in_new_oidc_user
+    return redirect_to login_page_url(error: 'no-account-found') unless OidcLogin.auto_create_users?
+
+    @resource = Oidc::UserProvisioner.new(auth_hash: auth_hash).perform
+    sign_in_user
+  end
 
   def sign_in_user(redirect_url: nil, sso_account_id: nil)
     # Capture before skip_confirmation! sets confirmed_at, which would

@@ -6,4 +6,7 @@ Rails.application.config.middleware.use OmniAuth::Builder do
   provider :google_oauth2, ENV.fetch('GOOGLE_OAUTH_CLIENT_ID', nil), ENV.fetch('GOOGLE_OAUTH_CLIENT_SECRET', nil), {
     provider_ignores_state: true
   }
+
+  # ALLChat: SSO via Authentik (see config/initializers/oidc.rb)
+  provider OidcLogin::Strategy, OidcLogin.client_id, OidcLogin.client_secret, { scope: OidcLogin.scope }
 end

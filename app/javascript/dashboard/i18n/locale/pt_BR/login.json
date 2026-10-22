@@ -36,6 +36,9 @@
       "API": {
         "ERROR_MESSAGE": "A autenticação SSO falhou. Verifique suas credenciais e tente novamente."
       }
+    },
+    "OIDC": {
+      "ERROR_MESSAGE": "Não foi possível entrar com o login único. Tente novamente ou fale com o administrador."
     }
   }
 }
