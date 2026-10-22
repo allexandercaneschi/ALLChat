@@ -29,6 +29,7 @@ const ERROR_MESSAGES = {
   'shopify-installation-failed': 'LOGIN.OAUTH.SHOPIFY_INSTALLATION_FAILED',
   'saml-authentication-failed': 'LOGIN.SAML.API.ERROR_MESSAGE',
   'saml-not-enabled': 'LOGIN.SAML.API.ERROR_MESSAGE',
+  'oidc-failed': 'LOGIN.OIDC.ERROR_MESSAGE',
 };
 
 const IMPERSONATION_URL_SEARCH_KEY = 'impersonation';
@@ -110,6 +111,12 @@ export default {
         this.allowedLoginMethods.includes('google_oauth') &&
         Boolean(window.chatwootConfig.googleOAuthClientId)
       );
+    },
+    showOidcLogin() {
+      return window.chatwootConfig.oidcEnabled === true;
+    },
+    oidcButtonLabel() {
+      return window.chatwootConfig.oidcButtonLabel;
     },
     showSignupLink() {
       return (
@@ -460,12 +467,23 @@ export default {
       v-else
       class="bg-white shadow sm:mx-auto mt-11 sm:w-full sm:max-w-lg dark:bg-n-solid-2 p-11 sm:shadow-lg sm:rounded-lg"
       :class="{
-        'mb-8 mt-15': !showGoogleOAuth,
+        'mb-8 mt-15': !showGoogleOAuth && !showOidcLogin,
         'animate-wiggle': loginApi.hasErrored,
       }"
     >
       <div v-if="!email">
         <div class="flex flex-col gap-4">
+          <a
+            v-if="showOidcLogin"
+            href="/sso/oidc"
+            data-testid="oidc_login_button"
+            class="inline-flex justify-center w-full px-4 py-3 items-center bg-n-brand rounded-md shadow-sm focus:outline-offset-0 hover:opacity-90"
+          >
+            <Icon icon="i-lucide-key-round" class="size-5 text-white" />
+            <span class="ml-2 text-base font-medium text-white">
+              {{ oidcButtonLabel }}
+            </span>
+          </a>
           <GoogleOAuthButton
             v-if="showGoogleOAuth"
             :redirect-url="redirectUrl"
@@ -486,7 +504,7 @@ export default {
             </router-link>
           </div>
           <SimpleDivider
-            v-if="showGoogleOAuth || showSamlLogin"
+            v-if="showGoogleOAuth || showSamlLogin || showOidcLogin"
             :label="$t('COMMON.OR')"
             class="uppercase"
           />
