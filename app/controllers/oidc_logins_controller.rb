@@ -3,7 +3,7 @@
 # The authorize URL is built here (like the Google button does) because
 # devise_token_auth cannot redirect a POST to the OmniAuth request phase.
 # The state is stored where OmniAuth's callback phase checks it.
-class OidcLoginsController < ActionController::Base
+class OidcLoginsController < ApplicationController
   def new
     return head :not_found unless OidcLogin.enabled?
 
