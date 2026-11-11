@@ -37,9 +37,7 @@ class Api::V1::Accounts::BroadcastLists::ContactsController < Api::V1::Accounts:
 
   def import
     content = params.require(:content)
-    if content.bytesize > MAX_IMPORT_SIZE
-      return render json: { error: I18n.t('broadcast_lists.import.too_large') }, status: :unprocessable_entity
-    end
+    return render json: { error: I18n.t('broadcast_lists.import.too_large') }, status: :unprocessable_entity if content.bytesize > MAX_IMPORT_SIZE
 
     render json: BroadcastLists::ImportService.new(broadcast_list: @list, content: content).perform
   end
