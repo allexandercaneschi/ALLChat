@@ -729,6 +729,19 @@ const menuItems = computed(() => {
       ],
     },
     {
+      name: 'Broadcasts',
+      label: t('SIDEBAR.BROADCASTS'),
+      icon: 'i-lucide-send',
+      children: [
+        {
+          name: 'Broadcast lists',
+          label: t('SIDEBAR.BROADCAST_LISTS'),
+          to: accountScopedRoute('broadcast_lists_index'),
+          activeOn: ['broadcast_lists_index', 'broadcast_lists_show'],
+        },
+      ],
+    },
+    {
       name: 'Campaigns',
       label: t('SIDEBAR.CAMPAIGNS'),
       icon: 'i-lucide-megaphone',
