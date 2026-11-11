@@ -1,0 +1,67 @@
+{
+  "BROADCAST_LISTS": {
+    "HEADER": "Listas de transmissão",
+    "NEW": "Nova lista",
+    "LOADING": "Carregando listas...",
+    "EMPTY": "Nenhuma lista de transmissão ainda",
+    "EMPTY_AGENT": "Você não tem autorização em nenhuma lista de transmissão. Peça acesso a um administrador.",
+    "CONTACTS_COUNT": "{count} contatos",
+    "LABEL": "Etiqueta {label}",
+    "FETCH_ERROR": "Não foi possível carregar as listas de transmissão",
+    "FORM": {
+      "TITLE_NEW": "Nova lista de transmissão",
+      "TITLE_EDIT": "Editar lista de transmissão",
+      "NAME": "Nome da lista",
+      "DESCRIPTION": "Descrição (opcional)",
+      "LABEL_HINT": "Os contatos desta lista recebem a etiqueta {label}",
+      "SAVE": "Salvar"
+    },
+    "MESSAGES": {
+      "CREATED": "Lista criada",
+      "UPDATED": "Lista atualizada",
+      "DELETED": "Lista excluída",
+      "ERROR": "Não foi possível salvar a lista"
+    },
+    "DELETE": {
+      "TITLE": "Excluir a lista {name}?",
+      "DESCRIPTION": "A etiqueta {label} será removida dos {count} contatos desta lista. Os contatos continuam cadastrados.",
+      "CONFIRM": "Excluir lista"
+    },
+    "USERS": {
+      "BUTTON": "Usuários autorizados",
+      "TITLE": "Quem pode usar esta lista",
+      "DESCRIPTION": "Administradores usam todas as listas. Escolha os outros usuários que podem ver esta lista e enviar para ela.",
+      "PLACEHOLDER": "Escolha os usuários",
+      "SAVED": "Usuários autorizados salvos",
+      "ERROR": "Não foi possível salvar os usuários autorizados"
+    },
+    "SHOW": {
+      "BACK": "Listas",
+      "EDIT": "Editar",
+      "DELETE": "Excluir",
+      "SEARCH": "Pesquisar contatos nesta lista",
+      "ADD_CONTACT": "Adicionar contato",
+      "ADD_SEARCH": "Pesquisar por nome ou telefone",
+      "ADD_EMPTY": "Nenhum contato encontrado",
+      "ADDED": "Contato adicionado à lista",
+      "ALREADY": "Este contato já está na lista",
+      "IMPORT": "Importar arquivo",
+      "EMPTY": "Esta lista ainda não tem contatos. Adicione contatos ou importe um arquivo.",
+      "NO_RESULTS": "Nenhum contato encontrado na pesquisa",
+      "REMOVE": "Remover da lista",
+      "REMOVED": "Contato removido da lista",
+      "ERROR": "Não foi possível atualizar a lista",
+      "NO_PHONE": "Sem telefone"
+    },
+    "IMPORT": {
+      "TITLE": "Importar contatos",
+      "DESCRIPTION": "Arquivo de texto ou CSV com um contato por linha no formato nome,telefone (vírgula, ponto e vírgula ou tab). Os arquivos salvos pelo app ALL Mensagens funcionam como estão. Contatos existentes são reconhecidos pelo telefone; celulares são salvos sem o 9 adicional.",
+      "SELECT_FILE": "Escolher arquivo",
+      "NO_FILE": "Nenhum arquivo escolhido",
+      "CONFIRM": "Importar",
+      "RESULT": "{added} adicionados à lista ({created} contatos novos). {already} já estavam na lista.",
+      "INVALID": "Linhas ignoradas por telefone inválido: {lines}",
+      "ERROR": "Não foi possível importar o arquivo"
+    }
+  }
+}

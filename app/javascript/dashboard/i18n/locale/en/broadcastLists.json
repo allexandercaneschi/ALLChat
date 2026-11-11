@@ -1,0 +1,67 @@
+{
+  "BROADCAST_LISTS": {
+    "HEADER": "Broadcast lists",
+    "NEW": "New list",
+    "LOADING": "Loading lists...",
+    "EMPTY": "No broadcast lists yet",
+    "EMPTY_AGENT": "You are not authorized on any broadcast list. Ask an administrator for access.",
+    "CONTACTS_COUNT": "{count} contacts",
+    "LABEL": "Label {label}",
+    "FETCH_ERROR": "Could not load the broadcast lists",
+    "FORM": {
+      "TITLE_NEW": "New broadcast list",
+      "TITLE_EDIT": "Edit broadcast list",
+      "NAME": "List name",
+      "DESCRIPTION": "Description (optional)",
+      "LABEL_HINT": "Contacts in this list get the label {label}",
+      "SAVE": "Save"
+    },
+    "MESSAGES": {
+      "CREATED": "List created",
+      "UPDATED": "List updated",
+      "DELETED": "List deleted",
+      "ERROR": "Could not save the list"
+    },
+    "DELETE": {
+      "TITLE": "Delete list {name}?",
+      "DESCRIPTION": "The label {label} is removed from the {count} contacts of this list. The contacts themselves are kept.",
+      "CONFIRM": "Delete list"
+    },
+    "USERS": {
+      "BUTTON": "Authorized users",
+      "TITLE": "Who can use this list",
+      "DESCRIPTION": "Administrators can use every list. Choose the other users who can see this list and send to it.",
+      "PLACEHOLDER": "Choose users",
+      "SAVED": "Authorized users saved",
+      "ERROR": "Could not save the authorized users"
+    },
+    "SHOW": {
+      "BACK": "Lists",
+      "EDIT": "Edit",
+      "DELETE": "Delete",
+      "SEARCH": "Search contacts in this list",
+      "ADD_CONTACT": "Add contact",
+      "ADD_SEARCH": "Search by name or phone",
+      "ADD_EMPTY": "No contacts found",
+      "ADDED": "Contact added to the list",
+      "ALREADY": "This contact is already in the list",
+      "IMPORT": "Import file",
+      "EMPTY": "This list has no contacts yet. Add contacts or import a file.",
+      "NO_RESULTS": "No contacts match your search",
+      "REMOVE": "Remove from list",
+      "REMOVED": "Contact removed from the list",
+      "ERROR": "Could not update the list",
+      "NO_PHONE": "No phone"
+    },
+    "IMPORT": {
+      "TITLE": "Import contacts",
+      "DESCRIPTION": "Text or CSV file with one contact per line as name,phone (comma, semicolon or tab). Files saved by the ALL Mensagens app work as they are. Existing contacts are matched by phone; mobiles are saved without the extra 9.",
+      "SELECT_FILE": "Choose file",
+      "NO_FILE": "No file chosen",
+      "CONFIRM": "Import",
+      "RESULT": "{added} added to the list ({created} new contacts). {already} were already in the list.",
+      "INVALID": "Lines skipped for an invalid phone: {lines}",
+      "ERROR": "Could not import the file"
+    }
+  }
+}

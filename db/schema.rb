@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_10_17_235900) do
+ActiveRecord::Schema[7.1].define(version: 2026_11_11_135247) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -322,6 +322,26 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_17_235900) do
     t.datetime "monitor_event_activated_at"
     t.index ["account_id"], name: "index_automation_rules_on_account_id"
     t.index ["monitor_id"], name: "index_automation_rules_on_monitor_id"
+  end
+
+  create_table "broadcast_list_users", force: :cascade do |t|
+    t.bigint "broadcast_list_id", null: false
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["broadcast_list_id", "user_id"], name: "index_broadcast_list_users_on_broadcast_list_id_and_user_id", unique: true
+    t.index ["user_id"], name: "index_broadcast_list_users_on_user_id"
+  end
+
+  create_table "broadcast_lists", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "label_id", null: false
+    t.string "name", null: false
+    t.text "description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "name"], name: "index_broadcast_lists_on_account_id_and_name", unique: true
+    t.index ["label_id"], name: "index_broadcast_lists_on_label_id", unique: true
   end
 
   create_table "calls", force: :cascade do |t|

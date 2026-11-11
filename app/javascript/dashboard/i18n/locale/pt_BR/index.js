@@ -4,6 +4,7 @@ import agentMgmt from './agentMgmt.json';
 import attributesMgmt from './attributesMgmt.json';
 import auditLogs from './auditLogs.json';
 import automation from './automation.json';
+import broadcastLists from './broadcastLists.json';
 import bulkActions from './bulkActions.json';
 import calls from './calls.json';
 import campaign from './campaign.json';
@@ -53,6 +54,7 @@ export default {
   ...attributesMgmt,
   ...auditLogs,
   ...automation,
+  ...broadcastLists,
   ...bulkActions,
   ...calls,
   ...campaign,

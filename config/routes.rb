@@ -239,6 +239,15 @@ Rails.application.routes.draw do
             end
           end
 
+          resources :broadcast_lists, only: [:index, :show, :create, :update, :destroy] do
+            patch :users, on: :member
+            scope module: :broadcast_lists do
+              resources :contacts, only: [:index, :create, :destroy] do
+                post :import, on: :collection
+              end
+            end
+          end
+
           resources :search, only: [:index] do
             collection do
               get :conversations
