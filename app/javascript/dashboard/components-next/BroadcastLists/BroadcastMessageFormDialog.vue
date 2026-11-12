@@ -28,6 +28,8 @@ const props = defineProps({
 const emit = defineEmits(['submit']);
 
 const { t, locale } = useI18n();
+// vue-i18n uses pt_BR, but Intl only accepts BCP 47 tags such as pt-BR.
+const intlLocale = computed(() => locale.value.replace('_', '-'));
 const store = useStore();
 const dialogRef = ref(null);
 const form = reactive(emptyBroadcastForm());
@@ -55,7 +57,7 @@ const kindOptions = Object.values(SCHEDULE_KINDS).map(kind => ({
 const monthOptions = computed(() =>
   Array.from({ length: 12 }, (_, index) => ({
     value: index + 1,
-    label: new Date(2000, index, 1).toLocaleString(locale.value, {
+    label: new Date(2000, index, 1).toLocaleString(intlLocale.value, {
       month: 'long',
     }),
   }))
@@ -64,7 +66,7 @@ const monthOptions = computed(() =>
 const weekdayOptions = computed(() =>
   Array.from({ length: 7 }, (_, index) => ({
     value: index,
-    label: new Date(2023, 0, 1 + index).toLocaleString(locale.value, {
+    label: new Date(2023, 0, 1 + index).toLocaleString(intlLocale.value, {
       weekday: 'long',
     }),
   }))
