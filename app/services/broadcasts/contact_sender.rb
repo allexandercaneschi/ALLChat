@@ -21,13 +21,17 @@ class Broadcasts::ContactSender
   end
 
   def send_whatsapp(text)
-    contact_inbox = ContactInbox.find_by(contact: contact, inbox: inbox) || ContactInboxBuilder.new(contact: contact, inbox: inbox).perform
-    conversation = Conversation.create!(
-      account_id: account.id, inbox_id: inbox.id, contact_id: contact.id, contact_inbox_id: contact_inbox.id,
-      team_id: options['team_id'], status: :open, custom_attributes: awaiting_reply_attributes
-    )
+    conversation = open_conversation
     conversation.messages.create!(
       account_id: account.id, inbox_id: inbox.id, message_type: :outgoing, content: text, sender: account.agent_bots.find(options['bot_id'])
+    )
+  end
+
+  def open_conversation
+    contact_inbox = ContactInbox.find_by(contact: contact, inbox: inbox) || ContactInboxBuilder.new(contact: contact, inbox: inbox).perform
+    Conversation.create!(
+      account_id: account.id, inbox_id: inbox.id, contact_id: contact.id, contact_inbox_id: contact_inbox.id,
+      team_id: options['team_id'], status: :open, custom_attributes: awaiting_reply_attributes
     )
   end
 

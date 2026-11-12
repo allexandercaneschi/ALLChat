@@ -5,6 +5,7 @@ class CreateBroadcastMessages < ActiveRecord::Migration[7.1]
     ['empresa', 'Empresa (não usar nome)', 7, 'Marque para as transmissões usarem o texto padrão no lugar do primeiro nome']
   ].freeze
 
+  # rubocop:disable Metrics/MethodLength
   def up
     create_table :broadcast_messages do |t|
       t.bigint :account_id, null: false
@@ -34,6 +35,7 @@ class CreateBroadcastMessages < ActiveRecord::Migration[7.1]
 
     seed_contact_attributes
   end
+  # rubocop:enable Metrics/MethodLength
 
   def down
     drop_table :broadcast_messages

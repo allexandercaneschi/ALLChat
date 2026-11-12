@@ -7,7 +7,7 @@ class BroadcastReplyListener < BaseListener
     return unless message.incoming?
 
     conversation = message.conversation
-    return unless ['aguardando', 'encerrada'].include?(conversation.custom_attributes['transmissao'])
+    return unless %w[aguardando encerrada].include?(conversation.custom_attributes['transmissao'])
 
     conversation.update!(custom_attributes: conversation.custom_attributes.merge('transmissao' => 'respondida').except('transmissao_resolver_em'))
   end
