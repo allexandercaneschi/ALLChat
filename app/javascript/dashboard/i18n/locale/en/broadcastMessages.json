@@ -1,0 +1,63 @@
+{
+  "BROADCAST_MESSAGES": {
+    "HEADER": "Scheduled broadcasts",
+    "NEW": "New schedule",
+    "EMPTY": "No scheduled broadcasts yet. Create one for birthdays, special dates, promotions or notices.",
+    "FETCH_ERROR": "Could not load the scheduled broadcasts",
+    "ERROR": "Could not complete the action",
+    "SAVED": "Schedule saved",
+    "DELETED": "Schedule deleted",
+    "ACTIVE": "Active",
+    "INACTIVE": "Paused",
+    "EDIT": "Edit",
+    "DELETE": "Delete",
+    "DELETE_TITLE": "Delete schedule {name}?",
+    "DELETE_DESCRIPTION": "The schedule stops running. Conversations already sent are kept.",
+    "QUICK_SEND": "Quick send",
+    "QUEUED": "Sending to {count} contacts. Messages go out one by one.",
+    "KINDS": {
+      "ONCE": "Once, on a date and time",
+      "YEARLY_FIXED": "Every year, on a fixed date",
+      "YEARLY_WEEKDAY": "Every year, on a movable date (e.g. 2nd Sunday of May)",
+      "BIRTHDAY": "Birthdays (every day)"
+    },
+    "SUMMARY": {
+      "ONCE": "Once on {date}",
+      "YEARLY_FIXED": "Every year on {day} {month} at {time}",
+      "YEARLY_WEEKDAY": "Every year, week {week} {weekday} of {month} at {time}",
+      "BIRTHDAY": "Every day at {time} to contacts having a birthday"
+    },
+    "FORM": {
+      "TITLE_SEND": "Quick send",
+      "TITLE_SCHEDULE": "Scheduled broadcast",
+      "DESCRIPTION_SEND": "The message goes now to the {count} contacts of this list. Each contact gets a new conversation sent by Chip.",
+      "SEND": "Send now",
+      "SAVE": "Save",
+      "NAME": "Schedule name",
+      "LIST": "List",
+      "KIND": "When to send",
+      "RUN_AT": "Date and time",
+      "DAY": "Day",
+      "MONTH": "Month",
+      "WEEK_OF_MONTH": "Week of the month",
+      "WEEK_OF_MONTH_OPTION": "{count}º",
+      "WEEKDAY": "Weekday",
+      "SEND_TIME": "Send time",
+      "BIRTHDAY_HINT": "Uses the contact attribute \"Birth date\" (filled from the ERP).",
+      "CONTENT": "Message",
+      "INSERT_NAME": "Insert first name {variable}",
+      "NAME_FALLBACK": "Text when there is no name",
+      "NAME_FALLBACK_HINT": "Used instead of the first name for companies (attribute \"Company\") and contacts without a name.",
+      "INBOX": "Send through",
+      "INBOX_PLACEHOLDER": "Choose the inbox",
+      "TEAM": "Team that receives the replies",
+      "NO_TEAM": "No team",
+      "TEAM_HINT": "When the contact answers, the conversation stays locked until a technician takes it.",
+      "RESOLVE_AFTER_HOURS": "Resolve without reply after (hours)",
+      "RESOLVE_AFTER_HOURS_HINT": "If the contact does not answer in this time, the conversation is resolved without a closing message.",
+      "SEND_EMAIL": "Also send by e-mail to contacts that have one",
+      "SUBJECT": "E-mail subject",
+      "ACTIVE": "Schedule active"
+    }
+  }
+}

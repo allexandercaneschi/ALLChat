@@ -104,3 +104,15 @@ evolution_refresh_profile_pictures_job:
   cron: '30 4 * * *'
   class: 'Evolution::RefreshProfilePicturesJob'
   queue: scheduled_jobs
+
+# ALLChat: runs the scheduled broadcasts that are due
+broadcast_schedule_runner_job:
+  cron: '*/5 * * * *'
+  class: 'Broadcasts::ScheduleRunnerJob'
+  queue: scheduled_jobs
+
+# ALLChat: resolves unanswered broadcast conversations without a closing message
+broadcast_auto_resolve_job:
+  cron: '*/5 * * * *'
+  class: 'Broadcasts::AutoResolveJob'
+  queue: scheduled_jobs

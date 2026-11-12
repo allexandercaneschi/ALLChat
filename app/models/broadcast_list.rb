@@ -29,6 +29,7 @@ class BroadcastList < ApplicationRecord
   belongs_to :label
   has_many :broadcast_list_users, dependent: :delete_all
   has_many :users, through: :broadcast_list_users
+  has_many :broadcast_messages, dependent: :destroy
 
   validates :name, presence: true, uniqueness: { scope: :account_id }
   validates :label_id, uniqueness: true

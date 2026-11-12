@@ -1,0 +1,63 @@
+{
+  "BROADCAST_MESSAGES": {
+    "HEADER": "Transmissões agendadas",
+    "NEW": "Novo agendamento",
+    "EMPTY": "Nenhuma transmissão agendada. Crie uma para aniversários, datas especiais, promoções ou avisos.",
+    "FETCH_ERROR": "Não foi possível carregar as transmissões agendadas",
+    "ERROR": "Não foi possível concluir a ação",
+    "SAVED": "Agendamento salvo",
+    "DELETED": "Agendamento excluído",
+    "ACTIVE": "Ativo",
+    "INACTIVE": "Pausado",
+    "EDIT": "Editar",
+    "DELETE": "Excluir",
+    "DELETE_TITLE": "Excluir o agendamento {name}?",
+    "DELETE_DESCRIPTION": "O agendamento deixa de rodar. As conversas já enviadas são mantidas.",
+    "QUICK_SEND": "Envio rápido",
+    "QUEUED": "Enviando para {count} contatos. As mensagens saem uma a uma.",
+    "KINDS": {
+      "ONCE": "Uma vez, em data e hora",
+      "YEARLY_FIXED": "Todo ano, em data fixa",
+      "YEARLY_WEEKDAY": "Todo ano, em data móvel (ex.: 2º domingo de maio)",
+      "BIRTHDAY": "Aniversários (todos os dias)"
+    },
+    "SUMMARY": {
+      "ONCE": "Uma vez em {date}",
+      "YEARLY_FIXED": "Todo ano em {day} de {month} às {time}",
+      "YEARLY_WEEKDAY": "Todo ano, {week}ª semana, {weekday} de {month} às {time}",
+      "BIRTHDAY": "Todo dia às {time} para quem faz aniversário"
+    },
+    "FORM": {
+      "TITLE_SEND": "Envio rápido",
+      "TITLE_SCHEDULE": "Transmissão agendada",
+      "DESCRIPTION_SEND": "A mensagem sai agora para os {count} contatos desta lista. Cada contato recebe uma nova conversa enviada pela Chip.",
+      "SEND": "Enviar agora",
+      "SAVE": "Salvar",
+      "NAME": "Nome do agendamento",
+      "LIST": "Lista",
+      "KIND": "Quando enviar",
+      "RUN_AT": "Data e hora",
+      "DAY": "Dia",
+      "MONTH": "Mês",
+      "WEEK_OF_MONTH": "Semana do mês",
+      "WEEK_OF_MONTH_OPTION": "{count}ª",
+      "WEEKDAY": "Dia da semana",
+      "SEND_TIME": "Horário de envio",
+      "BIRTHDAY_HINT": "Usa o atributo do contato \"Data de nascimento\" (preenchido pelo ERP).",
+      "CONTENT": "Mensagem",
+      "INSERT_NAME": "Inserir primeiro nome {variable}",
+      "NAME_FALLBACK": "Texto quando não houver nome",
+      "NAME_FALLBACK_HINT": "Usado no lugar do primeiro nome para empresas (atributo \"Empresa\") e contatos sem nome.",
+      "INBOX": "Enviar por",
+      "INBOX_PLACEHOLDER": "Escolha a caixa de entrada",
+      "TEAM": "Time que recebe as respostas",
+      "NO_TEAM": "Sem time",
+      "TEAM_HINT": "Quando o contato responde, a conversa fica travada até um técnico assumir.",
+      "RESOLVE_AFTER_HOURS": "Finalizar sem resposta após (horas)",
+      "RESOLVE_AFTER_HOURS_HINT": "Se o contato não responder nesse prazo, a conversa é finalizada sem mensagem de encerramento.",
+      "SEND_EMAIL": "Enviar também por e-mail para quem tiver e-mail",
+      "SUBJECT": "Assunto do e-mail",
+      "ACTIVE": "Agendamento ativo"
+    }
+  }
+}

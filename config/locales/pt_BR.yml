@@ -283,6 +283,9 @@ pt_BR:
   broadcast_lists:
     import:
       too_large: 'O arquivo é muito grande. Divida em arquivos de até 1 MB'
+    delivery:
+      invalid_inbox: 'A caixa de entrada deve ser de WhatsApp ou API'
+      subject_required: 'Informe o assunto do e-mail'
   conversations:
     requests:
       already_pending: 'Já existe uma solicitação pendente para esta conversa'

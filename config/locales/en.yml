@@ -342,6 +342,9 @@ en:
   broadcast_lists:
     import:
       too_large: 'The file is too large. Split it into files of up to 1 MB'
+    delivery:
+      invalid_inbox: 'The inbox must be a WhatsApp or API inbox'
+      subject_required: 'Enter the e-mail subject'
   conversations:
     requests:
       already_pending: 'There is already a pending request for this conversation'

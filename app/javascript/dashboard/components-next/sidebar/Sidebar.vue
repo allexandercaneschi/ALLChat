@@ -739,6 +739,12 @@ const menuItems = computed(() => {
           to: accountScopedRoute('broadcast_lists_index'),
           activeOn: ['broadcast_lists_index', 'broadcast_lists_show'],
         },
+        {
+          name: 'Broadcast schedules',
+          label: t('SIDEBAR.BROADCAST_SCHEDULES'),
+          to: accountScopedRoute('broadcast_schedules_index'),
+          activeOn: ['broadcast_schedules_index'],
+        },
       ],
     },
     {

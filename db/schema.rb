@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_11_11_135247) do
+ActiveRecord::Schema[7.1].define(version: 2026_11_12_174646) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -342,6 +342,32 @@ ActiveRecord::Schema[7.1].define(version: 2026_11_11_135247) do
     t.datetime "updated_at", null: false
     t.index ["account_id", "name"], name: "index_broadcast_lists_on_account_id_and_name", unique: true
     t.index ["label_id"], name: "index_broadcast_lists_on_label_id", unique: true
+  end
+
+  create_table "broadcast_messages", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "broadcast_list_id", null: false
+    t.bigint "inbox_id", null: false
+    t.bigint "team_id"
+    t.bigint "created_by_id"
+    t.string "name", null: false
+    t.text "content", null: false
+    t.integer "schedule_kind", default: 0, null: false
+    t.datetime "run_at"
+    t.integer "month"
+    t.integer "day"
+    t.integer "weekday"
+    t.integer "week_of_month"
+    t.string "send_time", default: "09:00", null: false
+    t.boolean "send_email", default: false, null: false
+    t.string "name_fallback", default: "cliente", null: false
+    t.integer "resolve_after_hours", default: 24, null: false
+    t.boolean "active", default: true, null: false
+    t.date "last_run_on"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_broadcast_messages_on_account_id"
+    t.index ["broadcast_list_id"], name: "index_broadcast_messages_on_broadcast_list_id"
   end
 
   create_table "calls", force: :cascade do |t|

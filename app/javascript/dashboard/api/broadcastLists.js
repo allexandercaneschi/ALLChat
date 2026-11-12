@@ -27,6 +27,10 @@ class BroadcastListsAPI extends ApiClient {
     return axios.delete(`${this.url}/${listId}/contacts/${contactId}`);
   }
 
+  sendNow(listId, attributes) {
+    return axios.post(`${this.url}/${listId}/deliveries`, attributes);
+  }
+
   importContacts(listId, content) {
     return axios.post(`${this.url}/${listId}/contacts/import`, { content });
   }
