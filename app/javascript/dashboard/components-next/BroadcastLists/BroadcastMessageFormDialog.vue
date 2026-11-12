@@ -132,7 +132,9 @@ defineExpose({ open, close });
     :description="
       isSchedule
         ? ''
-        : t('BROADCAST_MESSAGES.FORM.DESCRIPTION_SEND', { count: recipientCount })
+        : t('BROADCAST_MESSAGES.FORM.DESCRIPTION_SEND', {
+            count: recipientCount,
+          })
     "
     :confirm-button-label="
       isSchedule
@@ -189,7 +191,10 @@ defineExpose({ open, close });
               <label class="text-label text-n-slate-12">
                 {{ t('BROADCAST_MESSAGES.FORM.WEEK_OF_MONTH') }}
               </label>
-              <Select v-model="form.weekOfMonth" :options="weekOfMonthOptions" />
+              <Select
+                v-model="form.weekOfMonth"
+                :options="weekOfMonthOptions"
+              />
             </div>
             <div class="flex flex-col gap-1">
               <label class="text-label text-n-slate-12">
@@ -229,7 +234,11 @@ defineExpose({ open, close });
           min-height="8rem"
         />
         <Button
-          :label="t('BROADCAST_MESSAGES.FORM.INSERT_NAME', { variable: NAME_VARIABLE })"
+          :label="
+            t('BROADCAST_MESSAGES.FORM.INSERT_NAME', {
+              variable: NAME_VARIABLE,
+            })
+          "
           icon="i-lucide-user"
           variant="link"
           color="slate"
