@@ -172,6 +172,7 @@
       }
     },
     "RESOLVE_DROPDOWN": {
+      "RESOLVE_WITHOUT_MESSAGE": "Resolve without message",
       "MARK_PENDING": "Mark as pending",
       "SNOOZE_UNTIL": "Snooze",
       "SNOOZE": {

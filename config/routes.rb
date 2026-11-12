@@ -245,8 +245,10 @@ Rails.application.routes.draw do
               resources :contacts, only: [:index, :create, :destroy] do
                 post :import, on: :collection
               end
+              resources :deliveries, only: [:create]
             end
           end
+          resources :broadcast_messages, only: [:index, :create, :update, :destroy]
 
           resources :search, only: [:index] do
             collection do

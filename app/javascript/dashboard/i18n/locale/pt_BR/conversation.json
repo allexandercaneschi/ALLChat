@@ -154,6 +154,7 @@
       }
     },
     "RESOLVE_DROPDOWN": {
+      "RESOLVE_WITHOUT_MESSAGE": "Resolver sem enviar mensagem",
       "MARK_PENDING": "Deixar pendente",
       "SNOOZE_UNTIL": "Adiar",
       "SNOOZE": {

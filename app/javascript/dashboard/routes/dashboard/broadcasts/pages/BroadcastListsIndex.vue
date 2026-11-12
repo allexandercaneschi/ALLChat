@@ -20,9 +20,7 @@ const isSaving = ref(false);
 const formDialogRef = ref(null);
 
 const emptyMessage = computed(() =>
-  isAdmin.value
-    ? t('BROADCAST_LISTS.EMPTY')
-    : t('BROADCAST_LISTS.EMPTY_AGENT')
+  isAdmin.value ? t('BROADCAST_LISTS.EMPTY') : t('BROADCAST_LISTS.EMPTY_AGENT')
 );
 
 const fetchLists = async () => {

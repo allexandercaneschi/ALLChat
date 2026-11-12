@@ -17,6 +17,8 @@ import Spinner from 'dashboard/components-next/spinner/Spinner.vue';
 import BroadcastListFormDialog from 'dashboard/components-next/BroadcastLists/BroadcastListFormDialog.vue';
 import BroadcastListImportDialog from 'dashboard/components-next/BroadcastLists/BroadcastListImportDialog.vue';
 import BroadcastListUsersDialog from 'dashboard/components-next/BroadcastLists/BroadcastListUsersDialog.vue';
+import BroadcastMessageFormDialog from 'dashboard/components-next/BroadcastLists/BroadcastMessageFormDialog.vue';
+import { deliveryPayload } from 'dashboard/components-next/BroadcastLists/broadcastSchedule';
 import { contactSearchTerm } from 'dashboard/components-next/BroadcastLists/contactSearchTerm';
 
 const CONTACTS_PER_PAGE = 25;
@@ -40,6 +42,7 @@ const selectedContactId = ref('');
 
 const formDialogRef = ref(null);
 const usersDialogRef = ref(null);
+const sendDialogRef = ref(null);
 const importDialogRef = ref(null);
 const deleteDialogRef = ref(null);
 
@@ -174,6 +177,22 @@ const updateUsers = async userIds => {
   }
 };
 
+const sendNow = async form => {
+  isSaving.value = true;
+  try {
+    const { data } = await BroadcastListsAPI.sendNow(
+      listId.value,
+      deliveryPayload(form)
+    );
+    sendDialogRef.value?.close();
+    useAlert(t('BROADCAST_MESSAGES.QUEUED', { count: data.queued }));
+  } catch (error) {
+    useAlert(errorMessage(error, 'BROADCAST_MESSAGES.ERROR'));
+  } finally {
+    isSaving.value = false;
+  }
+};
+
 const importContacts = async content => {
   isSaving.value = true;
   try {
@@ -294,6 +313,13 @@ onMounted(refresh);
             />
           </div>
           <Button
+            :label="t('BROADCAST_MESSAGES.QUICK_SEND')"
+            icon="i-lucide-send"
+            size="sm"
+            :disabled="!list?.contacts_count"
+            @click="sendDialogRef?.open()"
+          />
+          <Button
             :label="t('BROADCAST_LISTS.SHOW.IMPORT')"
             icon="i-lucide-file-up"
             variant="outline"
@@ -378,6 +404,13 @@ onMounted(refresh);
       ref="formDialogRef"
       :is-loading="isSaving"
       @submit="updateList"
+    />
+    <BroadcastMessageFormDialog
+      ref="sendDialogRef"
+      mode="send"
+      :recipient-count="list?.contacts_count || 0"
+      :is-loading="isSaving"
+      @submit="sendNow"
     />
     <BroadcastListUsersDialog
       ref="usersDialogRef"

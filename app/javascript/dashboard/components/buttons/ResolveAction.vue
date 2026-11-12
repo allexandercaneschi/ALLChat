@@ -6,6 +6,7 @@ import { useI18n } from 'vue-i18n';
 import { useStore, useStoreGetters } from 'dashboard/composables/store';
 import { useEmitter } from 'dashboard/composables/emitter';
 import { useKeyboardEvents } from 'dashboard/composables/useKeyboardEvents';
+import { usePolicy } from 'dashboard/composables/usePolicy';
 import { useConversationRequiredAttributes } from 'dashboard/composables/useConversationRequiredAttributes';
 
 import WootDropdownItem from 'shared/components/ui/dropdown/DropdownItem.vue';
@@ -24,6 +25,11 @@ const store = useStore();
 const getters = useStoreGetters();
 const { t } = useI18n();
 const { checkMissingAttributes } = useConversationRequiredAttributes();
+const { checkPermissions } = usePolicy();
+
+// ALLChat: the n8n closing-message flow skips conversations that carry this
+// attribute and then clears it.
+const SILENT_RESOLVE_ATTRIBUTES = { encerramento_tipo: 'sem_mensagem' };
 
 const arrowDownButtonRef = ref(null);
 const isLoading = ref(false);
@@ -50,6 +56,10 @@ const isSnoozed = computed(
 
 const showAdditionalActions = computed(
   () => !isPending.value && !isSnoozed.value
+);
+
+const canResolveWithoutMessage = computed(() =>
+  checkPermissions(['administrator', 'supervisor'])
 );
 
 const showOpenButton = computed(() => {
@@ -104,7 +114,11 @@ const toggleStatus = (status, snoozedUntil, customAttributes = null) => {
 const handleResolveWithAttributes = ({ attributes, context }) => {
   if (context) {
     const currentCustomAttributes = currentChat.value.custom_attributes || {};
-    const mergedAttributes = { ...currentCustomAttributes, ...attributes };
+    const mergedAttributes = {
+      ...currentCustomAttributes,
+      ...attributes,
+      ...(context.silent ? SILENT_RESOLVE_ATTRIBUTES : {}),
+    };
     toggleStatus(
       wootConstants.STATUS_TYPE.RESOLVED,
       context.snoozedUntil,
@@ -117,7 +131,7 @@ const onCmdOpenConversation = () => {
   toggleStatus(wootConstants.STATUS_TYPE.OPEN);
 };
 
-const onCmdResolveConversation = () => {
+const resolveConversation = (silent = false) => {
   const currentCustomAttributes = currentChat.value.custom_attributes || {};
   const { hasMissing, missing } = checkMissingAttributes(
     currentCustomAttributes
@@ -127,16 +141,24 @@ const onCmdResolveConversation = () => {
     const conversationContext = {
       id: currentChat.value.id,
       snoozedUntil: null,
+      silent,
     };
     resolveAttributesModalRef.value?.open(
       missing,
       currentCustomAttributes,
       conversationContext
     );
+  } else if (silent) {
+    toggleStatus(wootConstants.STATUS_TYPE.RESOLVED, null, {
+      ...currentCustomAttributes,
+      ...SILENT_RESOLVE_ATTRIBUTES,
+    });
   } else {
     toggleStatus(wootConstants.STATUS_TYPE.RESOLVED);
   }
 };
+
+const onCmdResolveConversation = () => resolveConversation();
 
 const keyboardEvents = {
   'Alt+KeyM': {
@@ -251,6 +273,18 @@ useEmitter(CMD_RESOLVE_CONVERSATION, onCmdResolveConversation);
             icon="i-lucide-circle-dot-dashed"
             class="w-full"
             @click="() => toggleStatus(wootConstants.STATUS_TYPE.PENDING)"
+          />
+        </WootDropdownItem>
+        <WootDropdownItem v-if="isOpen && canResolveWithoutMessage">
+          <Button
+            :label="t('CONVERSATION.RESOLVE_DROPDOWN.RESOLVE_WITHOUT_MESSAGE')"
+            ghost
+            slate
+            sm
+            start
+            icon="i-lucide-message-square-off"
+            class="w-full"
+            @click="() => resolveConversation(true)"
           />
         </WootDropdownItem>
       </WootDropdownMenu>
