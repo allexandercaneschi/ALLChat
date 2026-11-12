@@ -19,6 +19,7 @@ import BroadcastListImportDialog from 'dashboard/components-next/BroadcastLists/
 import BroadcastListUsersDialog from 'dashboard/components-next/BroadcastLists/BroadcastListUsersDialog.vue';
 import BroadcastMessageFormDialog from 'dashboard/components-next/BroadcastLists/BroadcastMessageFormDialog.vue';
 import { deliveryPayload } from 'dashboard/components-next/BroadcastLists/broadcastSchedule';
+import { contactSearchTerm } from 'dashboard/components-next/BroadcastLists/contactSearchTerm';
 
 const CONTACTS_PER_PAGE = 25;
 const SEARCH_DEBOUNCE_MS = 300;
@@ -93,16 +94,26 @@ const onPageChange = page => {
 const contactLabel = contact =>
   [contact.name, contact.phone_number].filter(Boolean).join(' · ');
 
-const searchContactsToAdd = debounce(async query => {
-  if (!query) {
-    contactOptions.value = [];
-    return;
-  }
-  const { data } = await ContactAPI.search(query);
-  contactOptions.value = data.payload.map(contact => ({
+const toContactOptions = payload =>
+  payload.map(contact => ({
     value: contact.id,
     label: contactLabel(contact),
   }));
+
+// The picker opens with the first contacts so it is never empty before typing.
+const loadFirstContacts = async () => {
+  const { data } = await ContactAPI.get(1);
+  contactOptions.value = toContactOptions(data.payload);
+};
+
+const searchContactsToAdd = debounce(async query => {
+  const term = contactSearchTerm(query);
+  if (!term) {
+    await loadFirstContacts();
+    return;
+  }
+  const { data } = await ContactAPI.search(term);
+  contactOptions.value = toContactOptions(data.payload);
 }, SEARCH_DEBOUNCE_MS);
 
 const addContact = async contactId => {
@@ -298,6 +309,7 @@ onMounted(refresh);
               :empty-state="t('BROADCAST_LISTS.SHOW.ADD_EMPTY')"
               use-api-results
               @search="searchContactsToAdd"
+              @open="loadFirstContacts"
             />
           </div>
           <Button
@@ -357,7 +369,10 @@ onMounted(refresh);
               </span>
               <span class="text-xs truncate text-n-slate-11">
                 {{
-                  [contact.phone_number || t('BROADCAST_LISTS.SHOW.NO_PHONE'), contact.email]
+                  [
+                    contact.phone_number || t('BROADCAST_LISTS.SHOW.NO_PHONE'),
+                    contact.email,
+                  ]
                     .filter(Boolean)
                     .join(' · ')
                 }}
