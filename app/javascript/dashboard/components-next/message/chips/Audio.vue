@@ -1,6 +1,8 @@
 <script setup>
 import {
   computed,
+  nextTick,
+  onBeforeUnmount,
   onMounted,
   useTemplateRef,
   ref,
@@ -44,6 +46,34 @@ const displayedTranscript = computed(() => {
 
 const audioPlayer = useTemplateRef('audioPlayer');
 
+// The file may still be being written when the message arrives (the server
+// answers 404), so the player asks for it again with a growing delay.
+const MAX_LOAD_RETRIES = 6;
+const LOAD_RETRY_BACKOFF_MS = 1000;
+const loadRetries = ref(0);
+let loadRetryTimer = null;
+
+const audioSrc = computed(() => {
+  if (!loadRetries.value) return timeStampURL.value;
+  const url = new URL(timeStampURL.value);
+  url.searchParams.set('retry', loadRetries.value);
+  return url.toString();
+});
+
+const onSourceError = () => {
+  if (loadRetries.value >= MAX_LOAD_RETRIES) return;
+  loadRetryTimer = setTimeout(
+    async () => {
+      loadRetries.value += 1;
+      await nextTick();
+      audioPlayer.value?.load();
+    },
+    LOAD_RETRY_BACKOFF_MS * (loadRetries.value + 1)
+  );
+};
+
+onBeforeUnmount(() => clearTimeout(loadRetryTimer));
+
 const isPlaying = ref(false);
 const isMuted = ref(false);
 const currentTime = ref(0);
@@ -73,6 +103,8 @@ const resolveStreamingDuration = () => {
 };
 
 const onLoadedMetadata = () => {
+  // load() resets the speed, so it is applied again after a retry
+  audioPlayer.value.playbackRate = playbackSpeed.value;
   const d = audioPlayer.value?.duration;
   if (!Number.isFinite(d)) {
     resolveStreamingDuration();
@@ -171,7 +203,7 @@ const downloadAudio = async () => {
     @timeupdate="onTimeUpdate"
     @ended="onEnd"
   >
-    <source :src="timeStampURL" />
+    <source :src="audioSrc" @error="onSourceError" />
   </audio>
   <div
     v-bind="$attrs"
