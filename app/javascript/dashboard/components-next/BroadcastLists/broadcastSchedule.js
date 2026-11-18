@@ -7,9 +7,10 @@ export const SCHEDULE_KINDS = {
 };
 
 export const DEFAULT_NAME_FALLBACK = 'cliente';
-export const DEFAULT_RESOLVE_AFTER_HOURS = 24;
+export const DEFAULT_RESOLVE_AFTER_MINUTES = 1440;
 export const DEFAULT_SEND_TIME = '09:00';
 export const NAME_VARIABLE = '{{nome}}';
+export const COMPANY_VARIABLE = '{{empresa}}';
 export const SENDING_CHANNELS = ['Channel::Api', 'Channel::Whatsapp'];
 export const WEEKS_OF_MONTH = [1, 2, 3, 4, 5];
 
@@ -20,7 +21,7 @@ export const emptyBroadcastForm = () => ({
   inboxId: '',
   teamId: '',
   nameFallback: DEFAULT_NAME_FALLBACK,
-  resolveAfterHours: DEFAULT_RESOLVE_AFTER_HOURS,
+  resolveAfterMinutes: DEFAULT_RESOLVE_AFTER_MINUTES,
   sendEmail: false,
   subject: '',
   scheduleKind: SCHEDULE_KINDS.ONCE,
@@ -49,7 +50,7 @@ export const formFromBroadcast = broadcast => ({
   inboxId: broadcast.inbox_id,
   teamId: broadcast.team_id || '',
   nameFallback: broadcast.name_fallback,
-  resolveAfterHours: broadcast.resolve_after_hours,
+  resolveAfterMinutes: broadcast.resolve_after_minutes,
   sendEmail: broadcast.send_email,
   subject: broadcast.name,
   scheduleKind: broadcast.schedule_kind,
@@ -67,7 +68,7 @@ export const deliveryPayload = form => ({
   inbox_id: form.inboxId,
   team_id: form.teamId || undefined,
   name_fallback: form.nameFallback.trim() || DEFAULT_NAME_FALLBACK,
-  resolve_after_hours: form.resolveAfterHours,
+  resolve_after_minutes: form.resolveAfterMinutes,
   send_email: form.sendEmail,
   subject: form.sendEmail ? form.subject.trim() : undefined,
 });
@@ -80,7 +81,7 @@ export const schedulePayload = form => {
     inbox_id: form.inboxId,
     team_id: form.teamId || null,
     name_fallback: form.nameFallback.trim() || DEFAULT_NAME_FALLBACK,
-    resolve_after_hours: form.resolveAfterHours,
+    resolve_after_minutes: form.resolveAfterMinutes,
     send_email: form.sendEmail,
     schedule_kind: form.scheduleKind,
     send_time: form.sendTime,

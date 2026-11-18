@@ -46,6 +46,7 @@
       "BIRTHDAY_HINT": "Usa o atributo do contato \"Data de nascimento\" (preenchido pelo ERP).",
       "CONTENT": "Mensagem",
       "INSERT_NAME": "Inserir primeiro nome {variable}",
+      "INSERT_COMPANY": "Inserir empresa {variable}",
       "NAME_FALLBACK": "Texto quando não houver nome",
       "NAME_FALLBACK_HINT": "Usado no lugar do primeiro nome para empresas (atributo \"Empresa\") e contatos sem nome.",
       "INBOX": "Enviar por",
@@ -53,8 +54,8 @@
       "TEAM": "Time que recebe as respostas",
       "NO_TEAM": "Sem time",
       "TEAM_HINT": "Quando o contato responde, a conversa fica travada até um técnico assumir.",
-      "RESOLVE_AFTER_HOURS": "Finalizar sem resposta após (horas)",
-      "RESOLVE_AFTER_HOURS_HINT": "Se o contato não responder nesse prazo, a conversa é finalizada sem mensagem de encerramento.",
+      "RESOLVE_AFTER_MINUTES": "Finalizar sem resposta após (minutos)",
+      "RESOLVE_AFTER_MINUTES_HINT": "Se o contato não responder nesse prazo, a conversa é finalizada sem mensagem de encerramento.",
       "SEND_EMAIL": "Enviar também por e-mail para quem tiver e-mail",
       "SUBJECT": "Assunto do e-mail",
       "ACTIVE": "Agendamento ativo"

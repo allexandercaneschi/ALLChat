@@ -32,7 +32,7 @@ class Api::V1::Accounts::BroadcastMessagesController < Api::V1::Accounts::BaseCo
   def broadcast_params
     attributes = params.require(:broadcast_message).permit(
       :broadcast_list_id, :inbox_id, :team_id, :name, :content, :schedule_kind, :run_at, :month, :day, :weekday, :week_of_month,
-      :send_time, :send_email, :name_fallback, :resolve_after_hours, :active
+      :send_time, :send_email, :name_fallback, :resolve_after_minutes, :active
     )
     Current.account.broadcast_lists.find(attributes[:broadcast_list_id]) if attributes.key?(:broadcast_list_id)
     Current.account.inboxes.find(attributes[:inbox_id]) if attributes.key?(:inbox_id)
