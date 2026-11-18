@@ -1,0 +1,11 @@
+{
+  "BROADCAST_COMPANIES": {
+    "HEADER": "Transmissão por empresa",
+    "DESCRIPTION": "Envia agora uma mensagem para todos os contatos que têm a empresa escolhida cadastrada. Não há agendamento.",
+    "EMPTY": "Nenhum contato tem empresa cadastrada. Preencha o campo \"Empresa\" nos contatos.",
+    "FETCH_ERROR": "Não foi possível carregar as empresas",
+    "CONTACTS_COUNT": "nenhum contato | 1 contato | {count} contatos",
+    "SEND": "Enviar",
+    "SEND_DESCRIPTION": "A mensagem sai agora para os {count} contatos da empresa {company}. Cada contato recebe uma nova conversa enviada pela Chip."
+  }
+}

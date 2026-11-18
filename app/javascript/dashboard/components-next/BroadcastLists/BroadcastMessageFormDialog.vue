@@ -22,6 +22,8 @@ const props = defineProps({
   mode: { type: String, default: 'send' },
   lists: { type: Array, default: () => [] },
   recipientCount: { type: Number, default: 0 },
+  // Replaces the default quick-send description (used by the company broadcast).
+  description: { type: String, default: '' },
   isLoading: { type: Boolean, default: false },
 });
 
@@ -134,7 +136,8 @@ defineExpose({ open, close });
     :description="
       isSchedule
         ? ''
-        : t('BROADCAST_MESSAGES.FORM.DESCRIPTION_SEND', {
+        : description ||
+          t('BROADCAST_MESSAGES.FORM.DESCRIPTION_SEND', {
             count: recipientCount,
           })
     "

@@ -249,6 +249,7 @@ Rails.application.routes.draw do
             end
           end
           resources :broadcast_messages, only: [:index, :create, :update, :destroy]
+          resources :company_broadcasts, only: [:index, :create]
 
           resources :search, only: [:index] do
             collection do
