@@ -1,6 +1,8 @@
 # ------- Branding Related Config ------- #
+# ALLChat: Internal::ReconcilePlanConfigService writes these values back on the community plan,
+# so they must be the ALLChat branding, otherwise the browser tab returns to "Chatwoot".
 - name: INSTALLATION_NAME
-  value: 'Chatwoot'
+  value: 'ALL Chat'
 - name: LOGO_THUMBNAIL
   value: '/brand-assets/logo_thumbnail.svg'
 - name: LOGO
@@ -8,11 +10,11 @@
 - name: LOGO_DARK
   value: '/brand-assets/logo_dark.svg'
 - name: BRAND_URL
-  value: 'https://www.chatwoot.com'
+  value: 'https://alltecnologias.com.br'
 - name: WIDGET_BRAND_URL
-  value: 'https://www.chatwoot.com'
+  value: 'https://alltecnologias.com.br'
 - name: BRAND_NAME
-  value: 'Chatwoot'
+  value: 'ALL Tecnologias'
 - name: TERMS_URL
   value: 'https://www.chatwoot.com/terms-of-service'
 - name: PRIVACY_URL
