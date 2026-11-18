@@ -20,7 +20,12 @@ const attachment = computed(() => {
   return attachments.value[0];
 });
 
-const { isLoaded, hasError, loadWithRetry } = useLoadWithRetry();
+// The file may still be being written when the message arrives, so the image
+// is requested again with a growing delay before it is shown as unavailable.
+const IMAGE_MAX_RETRY = 6;
+const { isLoaded, hasError, loadWithRetry } = useLoadWithRetry({
+  max_retry: IMAGE_MAX_RETRY,
+});
 
 const showGallery = ref(false);
 const isDownloading = ref(false);

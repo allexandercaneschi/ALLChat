@@ -10,14 +10,37 @@ class ActionCableBroadcastJob < ApplicationJob
     CONVERSATION_STATUS_CHANGED
   ].freeze
 
+  # ActiveStorage writes the file only after the message transaction commits, so the
+  # event can be ready before the file is. Browsers that react to it would get a 404.
+  UPLOAD_WAIT_ATTEMPTS = 20
+  UPLOAD_WAIT_INTERVAL = 0.25
+
   def perform(members, event_name, data)
     return if members.blank?
 
+    wait_for_attachment_files(event_name, data)
     broadcast_data = prepare_broadcast_data(event_name, data)
     broadcast_to_members(members, event_name, broadcast_data)
   end
 
   private
+
+  def wait_for_attachment_files(event_name, data)
+    return unless event_name == MESSAGE_CREATED && data[:attachments].present?
+
+    attachment_ids = data[:attachments].pluck(:id)
+    UPLOAD_WAIT_ATTEMPTS.times do
+      break if attachment_files_written?(attachment_ids)
+
+      sleep UPLOAD_WAIT_INTERVAL
+    end
+  end
+
+  def attachment_files_written?(attachment_ids)
+    Attachment.where(id: attachment_ids).includes(file_attachment: :blob).all? do |attachment|
+      !attachment.file.attached? || attachment.file.blob.service.exist?(attachment.file.blob.key)
+    end
+  end
 
   # Ensures that only the latest available data is sent to prevent UI issues
   # caused by out-of-order events during high-traffic periods. This prevents
