@@ -361,7 +361,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_11_18_170634) do
     t.string "send_time", default: "09:00", null: false
     t.boolean "send_email", default: false, null: false
     t.string "name_fallback", default: "cliente", null: false
-    t.integer "resolve_after_minutes", default: 1440, null: false
+    t.integer "resolve_after_minutes", default: 30, null: false
     t.boolean "active", default: true, null: false
     t.date "last_run_on"
     t.datetime "created_at", null: false

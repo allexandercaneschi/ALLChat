@@ -10,7 +10,7 @@
 #  month               :integer
 #  name                :string           not null
 #  name_fallback       :string           default("cliente"), not null
-#  resolve_after_minutes :integer          default(1440), not null
+#  resolve_after_minutes :integer          default(30), not null
 #  run_at              :datetime
 #  schedule_kind       :integer          default("once"), not null
 #  send_email          :boolean          default(FALSE), not null

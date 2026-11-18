@@ -7,7 +7,7 @@ export const SCHEDULE_KINDS = {
 };
 
 export const DEFAULT_NAME_FALLBACK = 'cliente';
-export const DEFAULT_RESOLVE_AFTER_MINUTES = 1440;
+export const DEFAULT_RESOLVE_AFTER_MINUTES = 30;
 export const DEFAULT_SEND_TIME = '09:00';
 export const NAME_VARIABLE = '{{nome}}';
 export const COMPANY_VARIABLE = '{{empresa}}';
