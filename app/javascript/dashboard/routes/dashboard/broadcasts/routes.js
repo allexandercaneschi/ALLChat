@@ -33,6 +33,6 @@ export const routes = [
     path: frontendURL('accounts/:accountId/broadcasts/companies'),
     name: 'broadcast_companies_index',
     component: BroadcastCompaniesIndex,
-    meta: { permissions: ['administrator'] },
+    meta: { permissions: ['administrator', 'supervisor'] },
   },
 ];

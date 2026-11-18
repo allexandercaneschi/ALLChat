@@ -1,7 +1,10 @@
 # ALLChat: immediate broadcast ("Transmissão por empresa") to every contact that has
-# the chosen company registered. There is no schedule, and only administrators use it.
+# the chosen company registered. There is no schedule, and only administrators and
+# supervisors use it.
 class Api::V1::Accounts::CompanyBroadcastsController < Api::V1::Accounts::BaseController
-  before_action :check_admin_authorization?
+  SENDING_CHANNELS = Api::V1::Accounts::BroadcastLists::DeliveriesController::SENDING_CHANNELS
+
+  before_action :check_manager_authorization
   before_action :fetch_inbox, only: [:create]
 
   def index
@@ -9,7 +12,7 @@ class Api::V1::Accounts::CompanyBroadcastsController < Api::V1::Accounts::BaseCo
   end
 
   def create
-    return render_error('broadcast_lists.delivery.invalid_inbox') unless Api::V1::Accounts::BroadcastLists::DeliveriesController::SENDING_CHANNELS.include?(@inbox.channel_type)
+    return render_error('broadcast_lists.delivery.invalid_inbox') unless SENDING_CHANNELS.include?(@inbox.channel_type)
     return render_error('broadcast_lists.delivery.subject_required') if params[:send_email] && params[:subject].blank?
 
     contacts = companies.contacts(params.require(:company))
@@ -20,6 +23,10 @@ class Api::V1::Accounts::CompanyBroadcastsController < Api::V1::Accounts::BaseCo
   end
 
   private
+
+  def check_manager_authorization
+    raise Pundit::NotAuthorizedError unless Current.account_user.administrator_or_supervisor?
+  end
 
   def companies
     @companies ||= Broadcasts::Companies.new(account: Current.account)
