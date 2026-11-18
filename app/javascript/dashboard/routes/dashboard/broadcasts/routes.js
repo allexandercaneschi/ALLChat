@@ -2,6 +2,7 @@ import { frontendURL } from '../../../helper/URLHelper';
 import BroadcastListsIndex from './pages/BroadcastListsIndex.vue';
 import BroadcastListShow from './pages/BroadcastListShow.vue';
 import BroadcastSchedulesIndex from './pages/BroadcastSchedulesIndex.vue';
+import BroadcastCompaniesIndex from './pages/BroadcastCompaniesIndex.vue';
 
 // ALLChat: broadcasts. Every user reaches the pages; the API only returns the
 // lists the user is authorized on (administrators see all of them).
@@ -27,5 +28,11 @@ export const routes = [
     name: 'broadcast_schedules_index',
     component: BroadcastSchedulesIndex,
     meta: { permissions: ['administrator'] },
+  },
+  {
+    path: frontendURL('accounts/:accountId/broadcasts/companies'),
+    name: 'broadcast_companies_index',
+    component: BroadcastCompaniesIndex,
+    meta: { permissions: ['administrator', 'supervisor'] },
   },
 ];

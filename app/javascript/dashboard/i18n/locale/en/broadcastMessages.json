@@ -46,6 +46,7 @@
       "BIRTHDAY_HINT": "Uses the contact attribute \"Birth date\" (filled from the ERP).",
       "CONTENT": "Message",
       "INSERT_NAME": "Insert first name {variable}",
+      "INSERT_COMPANY": "Insert company {variable}",
       "NAME_FALLBACK": "Text when there is no name",
       "NAME_FALLBACK_HINT": "Used instead of the first name for companies (attribute \"Company\") and contacts without a name.",
       "INBOX": "Send through",
@@ -53,8 +54,8 @@
       "TEAM": "Team that receives the replies",
       "NO_TEAM": "No team",
       "TEAM_HINT": "When the contact answers, the conversation stays locked until a technician takes it.",
-      "RESOLVE_AFTER_HOURS": "Resolve without reply after (hours)",
-      "RESOLVE_AFTER_HOURS_HINT": "If the contact does not answer in this time, the conversation is resolved without a closing message.",
+      "RESOLVE_AFTER_MINUTES": "Resolve without reply after (minutes)",
+      "RESOLVE_AFTER_MINUTES_HINT": "If the contact does not answer in this time, the conversation is resolved without a closing message.",
       "SEND_EMAIL": "Also send by e-mail to contacts that have one",
       "SUBJECT": "E-mail subject",
       "ACTIVE": "Schedule active"

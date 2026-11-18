@@ -1,0 +1,11 @@
+{
+  "BROADCAST_COMPANIES": {
+    "HEADER": "Broadcast by company",
+    "DESCRIPTION": "Sends one message now to every contact that has the chosen company registered. There is no schedule.",
+    "EMPTY": "No contact has a company registered yet. Fill in the \"Company\" field on the contacts.",
+    "FETCH_ERROR": "Could not load the companies",
+    "CONTACTS_COUNT": "no contacts | 1 contact | {count} contacts",
+    "SEND": "Send",
+    "SEND_DESCRIPTION": "The message goes now to the {count} contacts of the company {company}. Each contact gets a new conversation sent by Chip."
+  }
+}

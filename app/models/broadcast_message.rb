@@ -10,7 +10,7 @@
 #  month               :integer
 #  name                :string           not null
 #  name_fallback       :string           default("cliente"), not null
-#  resolve_after_hours :integer          default(24), not null
+#  resolve_after_minutes :integer          default(30), not null
 #  run_at              :datetime
 #  schedule_kind       :integer          default("once"), not null
 #  send_email          :boolean          default(FALSE), not null
@@ -47,7 +47,7 @@ class BroadcastMessage < ApplicationRecord
 
   validates :name, :content, presence: true
   validates :send_time, format: { with: SEND_TIME_FORMAT }
-  validates :resolve_after_hours, numericality: { only_integer: true, greater_than: 0 }
+  validates :resolve_after_minutes, numericality: { only_integer: true, greater_than: 0 }
   validates :run_at, presence: true, if: :once?
   validates :month, inclusion: { in: 1..12 }, if: -> { yearly_fixed? || yearly_weekday? }
   validates :day, inclusion: { in: 1..31 }, if: :yearly_fixed?
@@ -90,7 +90,7 @@ class BroadcastMessage < ApplicationRecord
   def delivery_options
     {
       'content' => content, 'inbox_id' => inbox_id, 'team_id' => team_id, 'name_fallback' => name_fallback,
-      'send_email' => send_email, 'resolve_after_hours' => resolve_after_hours, 'subject' => name
+      'send_email' => send_email, 'resolve_after_minutes' => resolve_after_minutes, 'subject' => name
     }
   end
 

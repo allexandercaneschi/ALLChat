@@ -745,6 +745,12 @@ const menuItems = computed(() => {
           to: accountScopedRoute('broadcast_schedules_index'),
           activeOn: ['broadcast_schedules_index'],
         },
+        {
+          name: 'Broadcast companies',
+          label: t('SIDEBAR.BROADCAST_COMPANIES'),
+          to: accountScopedRoute('broadcast_companies_index'),
+          activeOn: ['broadcast_companies_index'],
+        },
       ],
     },
     {

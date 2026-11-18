@@ -21,7 +21,7 @@ class Api::V1::Accounts::BroadcastLists::DeliveriesController < Api::V1::Account
     {
       'content' => params.require(:content), 'inbox_id' => @inbox.id, 'team_id' => team&.id, 'subject' => params[:subject],
       'send_email' => params[:send_email] || false, 'name_fallback' => params.fetch(:name_fallback, 'cliente'),
-      'resolve_after_hours' => params.fetch(:resolve_after_hours, 24)
+      'resolve_after_minutes' => params.fetch(:resolve_after_minutes, 30)
     }
   end
 

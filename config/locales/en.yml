@@ -345,6 +345,8 @@ en:
     delivery:
       invalid_inbox: 'The inbox must be a WhatsApp or API inbox'
       subject_required: 'Enter the e-mail subject'
+  company_broadcasts:
+    company_not_found: 'No contact has this company registered'
   conversations:
     requests:
       already_pending: 'There is already a pending request for this conversation'

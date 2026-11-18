@@ -36,7 +36,7 @@ class Broadcasts::ContactSender
   end
 
   def awaiting_reply_attributes
-    { 'transmissao' => 'aguardando', 'transmissao_resolver_em' => options['resolve_after_hours'].to_i.hours.from_now.iso8601 }
+    { 'transmissao' => 'aguardando', 'transmissao_resolver_em' => options['resolve_after_minutes'].to_i.minutes.from_now.iso8601 }
   end
 
   def send_email(text)

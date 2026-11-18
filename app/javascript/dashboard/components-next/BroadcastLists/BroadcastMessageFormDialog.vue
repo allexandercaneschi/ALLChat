@@ -10,6 +10,7 @@ import Select from 'dashboard/components-next/select/Select.vue';
 import Switch from 'dashboard/components-next/switch/Switch.vue';
 import TextArea from 'dashboard/components-next/textarea/TextArea.vue';
 import {
+  COMPANY_VARIABLE,
   NAME_VARIABLE,
   SCHEDULE_KINDS,
   SENDING_CHANNELS,
@@ -22,6 +23,8 @@ const props = defineProps({
   mode: { type: String, default: 'send' },
   lists: { type: Array, default: () => [] },
   recipientCount: { type: Number, default: 0 },
+  // Replaces the default quick-send description (used by the company broadcast).
+  description: { type: String, default: '' },
   isLoading: { type: Boolean, default: false },
 });
 
@@ -88,7 +91,7 @@ const isFormInvalid = computed(() => {
   const missingBase =
     !form.content.trim() ||
     !form.inboxId ||
-    !form.resolveAfterHours ||
+    !form.resolveAfterMinutes ||
     (form.sendEmail && !isSchedule.value && !form.subject.trim());
   if (!isSchedule.value) return missingBase;
   return (
@@ -99,8 +102,8 @@ const isFormInvalid = computed(() => {
   );
 });
 
-const insertNameVariable = () => {
-  form.content = `${form.content}${NAME_VARIABLE}`;
+const insertVariable = variable => {
+  form.content = `${form.content}${variable}`;
 };
 
 const open = (initial = null) => {
@@ -134,7 +137,8 @@ defineExpose({ open, close });
     :description="
       isSchedule
         ? ''
-        : t('BROADCAST_MESSAGES.FORM.DESCRIPTION_SEND', {
+        : description ||
+          t('BROADCAST_MESSAGES.FORM.DESCRIPTION_SEND', {
             count: recipientCount,
           })
     "
@@ -235,19 +239,32 @@ defineExpose({ open, close });
           auto-height
           min-height="8rem"
         />
-        <Button
-          :label="
-            t('BROADCAST_MESSAGES.FORM.INSERT_NAME', {
-              variable: NAME_VARIABLE,
-            })
-          "
-          icon="i-lucide-user"
-          variant="link"
-          color="slate"
-          size="xs"
-          class="self-start"
-          @click="insertNameVariable"
-        />
+        <div class="flex flex-wrap gap-3">
+          <Button
+            :label="
+              t('BROADCAST_MESSAGES.FORM.INSERT_NAME', {
+                variable: NAME_VARIABLE,
+              })
+            "
+            icon="i-lucide-user"
+            variant="link"
+            color="slate"
+            size="xs"
+            @click="insertVariable(NAME_VARIABLE)"
+          />
+          <Button
+            :label="
+              t('BROADCAST_MESSAGES.FORM.INSERT_COMPANY', {
+                variable: COMPANY_VARIABLE,
+              })
+            "
+            icon="i-lucide-building-2"
+            variant="link"
+            color="slate"
+            size="xs"
+            @click="insertVariable(COMPANY_VARIABLE)"
+          />
+        </div>
       </div>
       <Input
         v-model="form.nameFallback"
@@ -275,11 +292,11 @@ defineExpose({ open, close });
         </span>
       </div>
       <Input
-        v-model="form.resolveAfterHours"
+        v-model="form.resolveAfterMinutes"
         type="number"
         min="1"
-        :label="t('BROADCAST_MESSAGES.FORM.RESOLVE_AFTER_HOURS')"
-        :message="t('BROADCAST_MESSAGES.FORM.RESOLVE_AFTER_HOURS_HINT')"
+        :label="t('BROADCAST_MESSAGES.FORM.RESOLVE_AFTER_MINUTES')"
+        :message="t('BROADCAST_MESSAGES.FORM.RESOLVE_AFTER_MINUTES_HINT')"
         :disabled="isLoading"
       />
       <div class="flex items-center gap-2">
