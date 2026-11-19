@@ -68,6 +68,14 @@ RSpec.describe Conversations::OwnershipRules do
       expect(rules(agent).assignment_decision(nil)).to eq(:direct)
     end
 
+    it 'treats 0 and an empty value as releasing the conversation, not as an agent' do
+      conversation.update!(assignee: agent)
+
+      expect(rules(agent).assignment_decision(0)).to eq(:direct)
+      expect(rules(agent).assignment_decision('0')).to eq(:direct)
+      expect(rules(agent).assignment_decision('')).to eq(:direct)
+    end
+
     it "forbids agents from reassigning someone else's conversation" do
       conversation.update!(assignee: other_agent)
 
