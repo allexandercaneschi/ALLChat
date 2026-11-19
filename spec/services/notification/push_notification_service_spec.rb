@@ -113,7 +113,7 @@ describe Notification::PushNotificationService do
 
     it 'still sends the browser push when the inbox is closed' do
       inbox.update!(working_hours_enabled: true)
-      create(:notification_subscription, :browser_push, user: notification.user)
+      create(:notification_subscription, :browser_push, user: notification.user, identifier: 'browser-test')
 
       with_modified_env VAPID_PUBLIC_KEY: 'test' do
         perform_at([2024, 1, 17, 20, 0])

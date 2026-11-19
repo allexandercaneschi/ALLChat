@@ -110,36 +110,37 @@ RSpec.describe WorkingHour do
   end
 
   context 'when there is a lunch break' do
+    let(:working_hour) { create(:working_hour, **break_attrs) }
     let(:break_attrs) { { break_start_hour: 12, break_start_minutes: 0, break_end_hour: 13, break_end_minutes: 0 } }
 
     before do
       Time.zone = 'UTC'
-      create(:working_hour, **break_attrs)
+      working_hour
     end
 
     it 'is open before the break' do
       travel_to '26.10.2020 11:59'.to_datetime
-      expect(described_class.today.open_now?).to be true
+      expect(working_hour.open_now?).to be true
     end
 
     it 'is closed when the break starts' do
       travel_to '26.10.2020 12:00'.to_datetime
-      expect(described_class.today.closed_now?).to be true
+      expect(working_hour.closed_now?).to be true
     end
 
     it 'is closed in the middle of the break' do
       travel_to '26.10.2020 12:30'.to_datetime
-      expect(described_class.today.closed_now?).to be true
+      expect(working_hour.closed_now?).to be true
     end
 
     it 'is open again when the break ends' do
       travel_to '26.10.2020 13:00'.to_datetime
-      expect(described_class.today.open_now?).to be true
+      expect(working_hour.open_now?).to be true
     end
 
     it 'is closed after closing time' do
       travel_to '26.10.2020 17:30'.to_datetime
-      expect(described_class.today.closed_now?).to be true
+      expect(working_hour.closed_now?).to be true
     end
   end
 

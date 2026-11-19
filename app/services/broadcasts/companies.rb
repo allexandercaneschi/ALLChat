@@ -8,9 +8,10 @@ class Broadcasts::Companies
   end
 
   def summary
-    groups.values.map do |rows|
+    companies = groups.values.map do |rows|
       { name: rows.map { |row| row.last.squish }.tally.max_by(&:last).first, contacts_count: rows.size }
-    end.sort_by { |company| self.class.key(company[:name]) }
+    end
+    companies.sort_by { |company| self.class.key(company[:name]) }
   end
 
   def contacts(name)

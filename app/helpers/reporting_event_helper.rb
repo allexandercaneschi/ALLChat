@@ -62,11 +62,13 @@ module ReportingEventHelper
 
   # A day with a break has two working periods (before and after it), which the working_hours gem accepts as two ranges.
   def working_hour_range(working_hour)
-    return { format_time(working_hour.open_hour, working_hour.open_minutes) => format_time(working_hour.close_hour, working_hour.close_minutes) } unless working_hour.break?
+    open_time = format_time(working_hour.open_hour, working_hour.open_minutes)
+    close_time = format_time(working_hour.close_hour, working_hour.close_minutes)
+    return { open_time => close_time } unless working_hour.break?
 
     {
-      format_time(working_hour.open_hour, working_hour.open_minutes) => format_time(working_hour.break_start_hour, working_hour.break_start_minutes),
-      format_time(working_hour.break_end_hour, working_hour.break_end_minutes) => format_time(working_hour.close_hour, working_hour.close_minutes)
+      open_time => format_time(working_hour.break_start_hour, working_hour.break_start_minutes),
+      format_time(working_hour.break_end_hour, working_hour.break_end_minutes) => close_time
     }
   end
 
