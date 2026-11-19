@@ -1,7 +1,7 @@
 <script>
 import parse from 'date-fns/parse';
 import differenceInMinutes from 'date-fns/differenceInMinutes';
-import { generateTimeSlots } from '../helpers/businessHour';
+import { generateTimeSlots, isBreakValid } from '../helpers/businessHour';
 import Icon from 'dashboard/components-next/icon/Icon.vue';
 import NextSelect from 'dashboard/components-next/select/Select.vue';
 
@@ -43,6 +43,9 @@ export default {
     toTimeSlots() {
       return groupByPeriod(timeSlots.filter(slot => slot !== '12:00 AM'));
     },
+    breakTimeSlots() {
+      return groupByPeriod(timeSlots.filter(slot => slot !== '12:00 AM'));
+    },
     isDayEnabled: {
       get() {
         return Boolean(this.timeSlot.from && this.timeSlot.to);
@@ -53,6 +56,8 @@ export default {
               ...this.timeSlot,
               from: timeSlots[0],
               to: timeSlots[16],
+              breakFrom: '',
+              breakTo: '',
               valid: true,
               openAllDay: false,
             }
@@ -60,6 +65,8 @@ export default {
               ...this.timeSlot,
               from: '',
               to: '',
+              breakFrom: '',
+              breakTo: '',
               valid: false,
               openAllDay: false,
             };
@@ -72,12 +79,11 @@ export default {
       },
       set(value) {
         const fromDate = parse(value, 'hh:mm a', new Date());
-        const valid = differenceInMinutes(this.toDate, fromDate) / 60 > 0;
-        this.$emit('update', {
-          ...this.timeSlot,
-          from: value,
-          valid,
-        });
+        const slot = { ...this.timeSlot, from: value };
+        const valid =
+          differenceInMinutes(this.toDate, fromDate) / 60 > 0 &&
+          isBreakValid(slot);
+        this.$emit('update', { ...slot, valid });
       },
     },
     toTime: {
@@ -86,19 +92,14 @@ export default {
       },
       set(value) {
         const toDate = parse(value, 'hh:mm a', new Date());
+        const slot = { ...this.timeSlot, to: value };
         if (value === '12:00 AM') {
-          this.$emit('update', {
-            ...this.timeSlot,
-            to: value,
-            valid: true,
-          });
+          this.$emit('update', { ...slot, valid: isBreakValid(slot) });
         } else {
-          const valid = differenceInMinutes(toDate, this.fromDate) / 60 > 0;
-          this.$emit('update', {
-            ...this.timeSlot,
-            to: value,
-            valid,
-          });
+          const valid =
+            differenceInMinutes(toDate, this.fromDate) / 60 > 0 &&
+            isBreakValid(slot);
+          this.$emit('update', { ...slot, valid });
         }
       },
     },
@@ -108,10 +109,19 @@ export default {
     toDate() {
       return parse(this.toTime, 'hh:mm a', new Date());
     },
-    totalHours() {
-      if (this.timeSlot.openAllDay) return '24h';
+    breakMinutes() {
+      if (!this.hasBreak || this.hasBreakError) return 0;
 
-      const totalMinutes = differenceInMinutes(this.toDate, this.fromDate);
+      return differenceInMinutes(
+        parse(this.breakTo, 'hh:mm a', new Date()),
+        parse(this.breakFrom, 'hh:mm a', new Date())
+      );
+    },
+    totalHours() {
+      const dayMinutes = this.timeSlot.openAllDay
+        ? 24 * 60
+        : differenceInMinutes(this.toDate, this.fromDate);
+      const totalMinutes = dayMinutes - this.breakMinutes;
       const [h, m] = [Math.floor(totalMinutes / 60), totalMinutes % 60];
 
       return [h && `${h}h`, m && `${m}m`].filter(Boolean).join(' ') || '0m';
@@ -119,29 +129,67 @@ export default {
     hasError() {
       return !this.timeSlot.valid;
     },
+    hasBreak: {
+      get() {
+        return Boolean(this.timeSlot.breakFrom || this.timeSlot.breakTo);
+      },
+      set(value) {
+        const slot = {
+          ...this.timeSlot,
+          breakFrom: value ? '12:00 PM' : '',
+          breakTo: value ? '01:00 PM' : '',
+        };
+        this.$emit('update', {
+          ...slot,
+          valid: this.isRangeValid && isBreakValid(slot),
+        });
+      },
+    },
+    breakFrom: {
+      get() {
+        return this.timeSlot.breakFrom;
+      },
+      set(value) {
+        this.updateBreak({ breakFrom: value });
+      },
+    },
+    breakTo: {
+      get() {
+        return this.timeSlot.breakTo;
+      },
+      set(value) {
+        this.updateBreak({ breakTo: value });
+      },
+    },
+    isRangeValid() {
+      if (this.timeSlot.to === '12:00 AM') return true;
+      return differenceInMinutes(this.toDate, this.fromDate) > 0;
+    },
+    hasBreakError() {
+      return this.hasBreak && !isBreakValid(this.timeSlot);
+    },
     isOpenAllDay: {
       get() {
         return this.timeSlot.openAllDay;
       },
       set(value) {
-        if (value) {
-          this.$emit('update', {
-            ...this.timeSlot,
-            from: '12:00 AM',
-            to: '11:59 PM',
-            valid: true,
-            openAllDay: value,
-          });
-        } else {
-          this.$emit('update', {
-            ...this.timeSlot,
-            from: '09:00 AM',
-            to: '05:00 PM',
-            valid: true,
-            openAllDay: value,
-          });
-        }
+        const slot = {
+          ...this.timeSlot,
+          from: value ? '12:00 AM' : '09:00 AM',
+          to: value ? '11:59 PM' : '05:00 PM',
+          openAllDay: value,
+        };
+        this.$emit('update', { ...slot, valid: isBreakValid(slot) });
       },
+    },
+  },
+  methods: {
+    updateBreak(changes) {
+      const slot = { ...this.timeSlot, ...changes };
+      this.$emit('update', {
+        ...slot,
+        valid: this.isRangeValid && isBreakValid(slot),
+      });
     },
   },
 };
@@ -194,8 +242,43 @@ export default {
             :disabled="isOpenAllDay"
           />
         </div>
-        <span v-if="hasError" class="error text-label-small text-n-ruby-9">
+        <div class="flex items-center gap-4">
+          <div class="flex items-center gap-2">
+            <input
+              v-model="hasBreak"
+              name="enable-break"
+              class="m-0"
+              type="checkbox"
+              :title="$t('INBOX_MGMT.BUSINESS_HOURS.BREAK_ENABLE')"
+            />
+            <span class="text-body-main text-n-slate-12">{{
+              $t('INBOX_MGMT.BUSINESS_HOURS.BREAK')
+            }}</span>
+          </div>
+          <template v-if="hasBreak">
+            <NextSelect
+              v-model="breakFrom"
+              :groups="breakTimeSlots"
+              :placeholder="$t('INBOX_MGMT.BUSINESS_HOURS.DAY.CHOOSE')"
+            />
+            <div class="flex items-center">
+              <Icon icon="i-lucide-minus size-4" />
+            </div>
+            <NextSelect
+              v-model="breakTo"
+              :groups="breakTimeSlots"
+              :placeholder="$t('INBOX_MGMT.BUSINESS_HOURS.DAY.CHOOSE')"
+            />
+          </template>
+        </div>
+        <span
+          v-if="hasError && !hasBreakError"
+          class="error text-label-small text-n-ruby-9"
+        >
           {{ $t('INBOX_MGMT.BUSINESS_HOURS.DAY.VALIDATION_ERROR') }}
+        </span>
+        <span v-if="hasBreakError" class="error text-label-small text-n-ruby-9">
+          {{ $t('INBOX_MGMT.BUSINESS_HOURS.BREAK_VALIDATION_ERROR') }}
         </span>
       </div>
       <span v-else class="text-body-main text-n-slate-11">

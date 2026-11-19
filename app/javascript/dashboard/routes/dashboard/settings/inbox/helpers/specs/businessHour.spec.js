@@ -1,6 +1,7 @@
 import {
   generateTimeSlots,
   getTime,
+  isBreakValid,
   timeSlotParse,
   timeSlotTransform,
   timeZoneOptions,
@@ -100,10 +101,70 @@ describe('#timeSlotParse', () => {
         day: 1,
         from: '01:30 AM',
         to: '04:30 AM',
+        breakFrom: '',
+        breakTo: '',
         valid: true,
         openAllDay: false,
       },
     ]);
+  });
+
+  it('parses the break of the day', () => {
+    const slot = {
+      day_of_week: 1,
+      open_hour: 8,
+      open_minutes: 0,
+      close_hour: 18,
+      close_minutes: 0,
+      closed_all_day: false,
+      open_all_day: false,
+      break_start_hour: 12,
+      break_start_minutes: 0,
+      break_end_hour: 13,
+      break_end_minutes: 30,
+    };
+
+    expect(timeSlotParse([slot])[0]).toMatchObject({
+      breakFrom: '12:00 PM',
+      breakTo: '01:30 PM',
+    });
+  });
+
+  it('keeps a break that starts at midnight hour 0', () => {
+    const slot = {
+      day_of_week: 1,
+      open_hour: 0,
+      open_minutes: 0,
+      close_hour: 23,
+      close_minutes: 59,
+      closed_all_day: false,
+      open_all_day: true,
+      break_start_hour: 0,
+      break_start_minutes: 30,
+      break_end_hour: 1,
+      break_end_minutes: 0,
+    };
+
+    expect(timeSlotParse([slot])[0]).toMatchObject({
+      breakFrom: '12:30 AM',
+      breakTo: '01:00 AM',
+    });
+  });
+
+  it('ignores the break of a closed day', () => {
+    const slot = {
+      day_of_week: 0,
+      closed_all_day: true,
+      break_start_hour: 12,
+      break_start_minutes: 0,
+      break_end_hour: 13,
+      break_end_minutes: 0,
+    };
+
+    expect(timeSlotParse([slot])[0]).toMatchObject({
+      breakFrom: '',
+      breakTo: '',
+    });
   });
 });
 
@@ -126,8 +187,81 @@ describe('#timeSlotTransform', () => {
         close_minutes: 30,
         closed_all_day: false,
         open_all_day: false,
+        break_start_hour: null,
+        break_start_minutes: null,
+        break_end_hour: null,
+        break_end_minutes: null,
       },
     ]);
+  });
+
+  it('transforms the break of the day', () => {
+    const slot = {
+      day: 1,
+      from: '08:00 AM',
+      to: '06:00 PM',
+      breakFrom: '12:00 PM',
+      breakTo: '01:30 PM',
+      valid: true,
+      openAllDay: false,
+    };
+
+    expect(timeSlotTransform([slot])[0]).toMatchObject({
+      break_start_hour: 12,
+      break_start_minutes: 0,
+      break_end_hour: 13,
+      break_end_minutes: 30,
+    });
+  });
+
+  it('sends no break for a closed day', () => {
+    const slot = {
+      day: 0,
+      from: '',
+      to: '',
+      breakFrom: '12:00 PM',
+      breakTo: '01:00 PM',
+      valid: false,
+      openAllDay: false,
+    };
+
+    expect(timeSlotTransform([slot])[0]).toMatchObject({
+      closed_all_day: true,
+      break_start_hour: null,
+      break_end_hour: null,
+    });
+  });
+});
+
+describe('#isBreakValid', () => {
+  const day = { from: '08:00 AM', to: '06:00 PM' };
+
+  it('accepts a day without a break', () => {
+    expect(isBreakValid({ ...day, breakFrom: '', breakTo: '' })).toBe(true);
+  });
+
+  it('accepts a break inside the working hours', () => {
+    expect(
+      isBreakValid({ ...day, breakFrom: '12:00 PM', breakTo: '01:00 PM' })
+    ).toBe(true);
+  });
+
+  it('rejects a break with only one time', () => {
+    expect(
+      isBreakValid({ ...day, breakFrom: '12:00 PM', breakTo: '' })
+    ).toBe(false);
+  });
+
+  it('rejects a break that ends before it starts', () => {
+    expect(
+      isBreakValid({ ...day, breakFrom: '01:00 PM', breakTo: '12:00 PM' })
+    ).toBe(false);
+  });
+
+  it('rejects a break outside the working hours', () => {
+    expect(
+      isBreakValid({ ...day, breakFrom: '05:30 PM', breakTo: '07:00 PM' })
+    ).toBe(false);
   });
 });
 

@@ -1450,7 +1450,10 @@
         "VALIDATION_ERROR": "Starting time should be before closing time.",
         "CHOOSE": "Choose"
       },
-      "ALL_DAY": "All-Day"
+      "ALL_DAY": "All-Day",
+      "BREAK": "Break",
+      "BREAK_ENABLE": "Add a break (lunch)",
+      "BREAK_VALIDATION_ERROR": "The break needs a start and an end, and must be inside the working hours."
     },
     "IMAP": {
       "TITLE": "IMAP",
