@@ -19,7 +19,8 @@ class Conversations::OwnershipRules
   def assignment_decision(assignee_id)
     return :direct if manager?
 
-    target_id = assignee_id.presence&.to_i
+    # Clients release a conversation with nil, an empty value or 0; none of them names an agent.
+    target_id = assignee_id.to_i.positive? ? assignee_id.to_i : nil
     return assign_to_self_decision if target_id == user.id
     return :forbidden unless owner?
 
