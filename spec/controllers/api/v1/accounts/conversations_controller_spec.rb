@@ -538,6 +538,31 @@ RSpec.describe 'Conversations API', type: :request do
           expect(response_data[:meta][:team][:name]).to eq(team.name)
         end
 
+        it 'does not let an agent create a conversation assigned to another agent' do
+          other_agent = create(:user, account: account, role: :agent)
+
+          expect do
+            post "/api/v1/accounts/#{account.id}/conversations",
+                 headers: agent.create_new_auth_token,
+                 params: { source_id: contact_inbox.source_id, contact_id: contact.id, inbox_id: inbox.id, assignee_id: other_agent.id },
+                 as: :json
+          end.not_to change(Conversation, :count)
+
+          expect(response).to have_http_status(:forbidden)
+        end
+
+        it 'lets an administrator create a conversation assigned to an agent' do
+          allow(Rails.configuration.dispatcher).to receive(:dispatch)
+          admin = create(:user, account: account, role: :administrator)
+
+          post "/api/v1/accounts/#{account.id}/conversations",
+               headers: admin.create_new_auth_token,
+               params: { source_id: contact_inbox.source_id, contact_id: contact.id, inbox_id: inbox.id, assignee_id: agent.id },
+               as: :json
+
+          expect(response).to have_http_status(:success)
+        end
+
         it 'does not create a conversation with an assignee from another account' do
           other_user = create(:user, account: create(:account))
 
