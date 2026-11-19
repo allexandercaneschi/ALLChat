@@ -388,6 +388,81 @@ describe('availabilityHelpers', () => {
     });
   });
 
+  describe('break (lunch) handling', () => {
+    const workingHours = [
+      {
+        dayOfWeek: 1,
+        openHour: 9,
+        openMinutes: 0,
+        closeHour: 17,
+        closeMinutes: 0,
+        breakStartHour: 12,
+        breakStartMinutes: 0,
+        breakEndHour: 13,
+        breakEndMinutes: 30,
+      },
+    ];
+
+    const mockTime = (hours, minutes) => {
+      const mockDate = new Date('2024-01-15T10:00:00.000Z');
+      mockDate.getDay = vi.fn().mockReturnValue(1);
+      mockDate.getHours = vi.fn().mockReturnValue(hours);
+      mockDate.getMinutes = vi.fn().mockReturnValue(minutes);
+      vi.mocked(utcToZonedTime).mockReturnValue(mockDate);
+    };
+
+    it('is in working hours right before the break', () => {
+      mockTime(11, 59);
+      expect(isInWorkingHours(new Date(), 'UTC', workingHours)).toBe(true);
+    });
+
+    it('is out of working hours when the break starts', () => {
+      mockTime(12, 0);
+      expect(isInWorkingHours(new Date(), 'UTC', workingHours)).toBe(false);
+    });
+
+    it('is in working hours again when the break ends', () => {
+      mockTime(13, 30);
+      expect(isInWorkingHours(new Date(), 'UTC', workingHours)).toBe(true);
+    });
+
+    it('ignores incomplete break fields', () => {
+      mockTime(12, 30);
+      const partial = [{ ...workingHours[0], breakEndHour: null }];
+      expect(isInWorkingHours(new Date(), 'UTC', partial)).toBe(true);
+    });
+
+    it('closes an all day slot during the break', () => {
+      mockTime(12, 30);
+      const allDay = [{ ...workingHours[0], openAllDay: true }];
+      expect(isInWorkingHours(new Date(), 'UTC', allDay)).toBe(false);
+    });
+
+    it('returns the end of the break as the next slot while on break', () => {
+      mockTime(12, 30);
+
+      const result = findNextAvailableSlotDetails(
+        new Date(),
+        'UTC',
+        workingHours
+      );
+
+      expect(result).toMatchObject({
+        minutesUntilOpen: 60,
+        daysUntilOpen: 0,
+        dayOfWeek: 1,
+        config: { openHour: 13, openMinutes: 30 },
+      });
+    });
+
+    it('gives the minutes until the break ends as the slot diff', () => {
+      mockTime(12, 30);
+      expect(findNextAvailableSlotDiff(new Date(), 'UTC', workingHours)).toBe(
+        60
+      );
+    });
+  });
+
   describe('findNextAvailableSlotDiff', () => {
     it('should return 0 when currently in working hours', () => {
       const mockDate = new Date('2024-01-15T10:00:00.000Z');

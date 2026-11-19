@@ -247,9 +247,9 @@ describe('#isBreakValid', () => {
   });
 
   it('rejects a break with only one time', () => {
-    expect(
-      isBreakValid({ ...day, breakFrom: '12:00 PM', breakTo: '' })
-    ).toBe(false);
+    expect(isBreakValid({ ...day, breakFrom: '12:00 PM', breakTo: '' })).toBe(
+      false
+    );
   });
 
   it('rejects a break that ends before it starts', () => {
