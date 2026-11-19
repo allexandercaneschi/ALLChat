@@ -8,6 +8,8 @@ class Notification::PushNotificationService
 
     notification_subscriptions.each do |subscription|
       send_browser_push(subscription)
+      next unless mobile_push_allowed?
+
       send_fcm_push(subscription)
       send_push_via_chatwoot_hub(subscription)
     end
@@ -28,6 +30,29 @@ class Notification::PushNotificationService
 
   def conversation
     @conversation ||= notification.conversation
+  end
+
+  # Pushes to the phone only go out while the inbox of the conversation is open. Outside its
+  # working hours, breaks included, the notification stays in the notification list of the app.
+  # The mobile push carries a `notification` block that the app cannot hold back, so this has to be
+  # decided here on the server. Browser pushes are not affected: they only reach open dashboards.
+  def mobile_push_allowed?
+    return @mobile_push_allowed unless @mobile_push_allowed.nil?
+
+    @mobile_push_allowed = urgent_notification? || !outside_business_hours?
+    Rails.logger.info("Mobile push skipped for #{user.email}: inbox is outside business hours") unless @mobile_push_allowed
+    @mobile_push_allowed
+  end
+
+  def outside_business_hours?
+    inbox = conversation.inbox
+    inbox.working_hours_enabled? && inbox.working_hours.exists? && inbox.out_of_office?
+  end
+
+  # Extension point for notifications that must reach the agent even outside business hours
+  # (planned: urgent mentions). None is urgent for now.
+  def urgent_notification?
+    false
   end
 
   def push_message
