@@ -85,6 +85,29 @@ export const getTime = (hour, minute) => {
   return `${parsedHour}:${parsedMinute} ${merdian}`;
 };
 
+const hasValue = value => value !== null && value !== undefined;
+
+// "hh:mm a" -> minutes since midnight. 12:00 AM as a closing time means the end of the day.
+const toMinutes = (time, isClosing = false) => {
+  if (isClosing && time === '12:00 AM') return 24 * 60;
+  const date = parse(time, 'hh:mm a', new Date());
+  return getHours(date) * 60 + getMinutes(date);
+};
+
+// The break is optional. When set, it needs both times and has to be inside the working hours.
+export const isBreakValid = ({ from, to, breakFrom, breakTo }) => {
+  if (!breakFrom && !breakTo) return true;
+  if (!breakFrom || !breakTo || !from || !to) return false;
+
+  const breakStart = toMinutes(breakFrom);
+  const breakEnd = toMinutes(breakTo);
+  return (
+    breakStart < breakEnd &&
+    toMinutes(from) < breakStart &&
+    breakEnd < toMinutes(to, true)
+  );
+};
+
 export const timeSlotParse = timeSlots => {
   return timeSlots.map(slot => {
     const {
@@ -95,14 +118,25 @@ export const timeSlotParse = timeSlots => {
       close_minutes: closeMinutes,
       closed_all_day: closedAllDay,
       open_all_day: openAllDay,
+      break_start_hour: breakStartHour,
+      break_start_minutes: breakStartMinutes,
+      break_end_hour: breakEndHour,
+      break_end_minutes: breakEndMinutes,
     } = slot;
     const from = closedAllDay ? '' : getTime(openHour, openMinutes);
     const to = closedAllDay ? '' : getTime(closeHour, closeMinutes);
+    const hasBreak =
+      !closedAllDay &&
+      [breakStartHour, breakStartMinutes, breakEndHour, breakEndMinutes].every(
+        hasValue
+      );
 
     return {
       day,
       to,
       from,
+      breakFrom: hasBreak ? getTime(breakStartHour, breakStartMinutes) : '',
+      breakTo: hasBreak ? getTime(breakEndHour, breakEndMinutes) : '',
       valid: !closedAllDay,
       openAllDay,
     };
@@ -119,6 +153,10 @@ export const timeSlotTransform = timeSlots => {
     let openMinutes = '';
     let closeHour = '';
     let closeMinutes = '';
+    let breakStartHour = null;
+    let breakStartMinutes = null;
+    let breakEndHour = null;
+    let breakEndMinutes = null;
 
     if (!closed) {
       fromDate = parse(slot.from, 'hh:mm a', new Date());
@@ -127,6 +165,15 @@ export const timeSlotTransform = timeSlots => {
       openMinutes = getMinutes(fromDate);
       closeHour = getHours(toDate);
       closeMinutes = getMinutes(toDate);
+
+      if (slot.breakFrom && slot.breakTo) {
+        const breakFromDate = parse(slot.breakFrom, 'hh:mm a', new Date());
+        const breakToDate = parse(slot.breakTo, 'hh:mm a', new Date());
+        breakStartHour = getHours(breakFromDate);
+        breakStartMinutes = getMinutes(breakFromDate);
+        breakEndHour = getHours(breakToDate);
+        breakEndMinutes = getMinutes(breakToDate);
+      }
     }
 
     return {
@@ -137,6 +184,10 @@ export const timeSlotTransform = timeSlots => {
       close_hour: closeHour,
       close_minutes: closeMinutes,
       open_all_day: openAllDay,
+      break_start_hour: breakStartHour,
+      break_start_minutes: breakStartMinutes,
+      break_end_hour: breakEndHour,
+      break_end_minutes: breakEndMinutes,
     };
   });
 };

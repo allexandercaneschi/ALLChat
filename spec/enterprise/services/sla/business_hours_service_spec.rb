@@ -180,5 +180,39 @@ RSpec.describe Sla::BusinessHoursService do
         expect(service.deadline.to_i).to eq(tuesday_8pm.to_i)
       end
     end
+
+    context 'when the day has a lunch break' do
+      # Wednesday 12:00-13:00 is the break, so the SLA clock stops during it
+      before do
+        inbox.working_hours.find_by(day_of_week: 3).update!(
+          break_start_hour: 12, break_start_minutes: 0, break_end_hour: 13, break_end_minutes: 0
+        )
+      end
+
+      def deadline_for(start_time, threshold)
+        described_class.new(inbox: inbox, start_time: Time.zone.parse(start_time), threshold_seconds: threshold).deadline
+      end
+
+      it 'skips the break when the threshold goes across it' do
+        expect(deadline_for('2024-01-17 11:00:00', 2.hours).to_i).to eq(Time.zone.parse('2024-01-17 14:00:00').to_i)
+      end
+
+      it 'ends exactly at the start of the break when the time fits before it' do
+        expect(deadline_for('2024-01-17 09:00:00', 3.hours).to_i).to eq(Time.zone.parse('2024-01-17 12:00:00').to_i)
+      end
+
+      it 'starts counting at the end of the break when the start time is inside it' do
+        expect(deadline_for('2024-01-17 12:30:00', 1.hour).to_i).to eq(Time.zone.parse('2024-01-17 14:00:00').to_i)
+      end
+
+      it 'counts normally after the break' do
+        expect(deadline_for('2024-01-17 13:00:00', 1.hour).to_i).to eq(Time.zone.parse('2024-01-17 14:00:00').to_i)
+      end
+
+      it 'goes on to the next business day after closing' do
+        # 1h left on Wednesday, then 1h on Thursday (no break) from 9:00
+        expect(deadline_for('2024-01-17 16:00:00', 2.hours).to_i).to eq(Time.zone.parse('2024-01-18 10:00:00').to_i)
+      end
+    end
   end
 end

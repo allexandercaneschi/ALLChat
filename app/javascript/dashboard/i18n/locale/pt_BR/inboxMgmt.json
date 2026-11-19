@@ -1327,7 +1327,10 @@
         "VALIDATION_ERROR": "Hora inicial deve ser antes de hora de fechamento.",
         "CHOOSE": "Selecione"
       },
-      "ALL_DAY": "O dia todo"
+      "ALL_DAY": "O dia todo",
+      "BREAK": "Intervalo",
+      "BREAK_ENABLE": "Adicionar intervalo (almoço)",
+      "BREAK_VALIDATION_ERROR": "O intervalo precisa de início e fim e deve estar dentro do horário de atendimento."
     },
     "IMAP": {
       "TITLE": "IMAP",

@@ -174,4 +174,21 @@ RSpec.describe ReportingEventHelper, type: :helper do
       end
     end
   end
+
+  describe '#business_hours' do
+    let(:inbox) { create(:inbox, working_hours_enabled: true, timezone: 'UTC') }
+    let(:from) { Time.utc(2024, 1, 17, 11, 0, 0) } # Wednesday, default hours are 9:00-17:00 UTC
+
+    it 'counts the whole interval when the day has no break' do
+      expect(helper.business_hours(inbox, from, Time.utc(2024, 1, 17, 14, 0, 0))).to eq(3.hours.to_i)
+    end
+
+    it 'does not count the break' do
+      inbox.working_hours.find_by(day_of_week: 3).update!(
+        break_start_hour: 12, break_start_minutes: 0, break_end_hour: 13, break_end_minutes: 0
+      )
+
+      expect(helper.business_hours(inbox, from, Time.utc(2024, 1, 17, 14, 0, 0))).to eq(2.hours.to_i)
+    end
+  end
 end

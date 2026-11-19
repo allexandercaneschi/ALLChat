@@ -40,6 +40,47 @@ const getDateInTimezone = (time, utcOffset) => {
 const toMinutes = (hours = 0, minutes = 0) => hours * MINUTES_IN_HOUR + minutes;
 
 /**
+ * Get the break (e.g. lunch) of a slot, in minutes since midnight.
+ * A break only exists when all four of its fields are set.
+ * @private
+ * @param {Object} config
+ * @returns {{start: number, end: number}|null}
+ */
+const getBreakRange = config => {
+  const { breakStartHour, breakStartMinutes, breakEndHour, breakEndMinutes } =
+    config;
+  const fields = [
+    breakStartHour,
+    breakStartMinutes,
+    breakEndHour,
+    breakEndMinutes,
+  ];
+  if (fields.some(field => field === null || field === undefined)) return null;
+
+  return {
+    start: toMinutes(breakStartHour, breakStartMinutes),
+    end: toMinutes(breakEndHour, breakEndMinutes),
+  };
+};
+
+/**
+ * Check if the current time is inside the break, which starts at its
+ * start time and ends right before its end time.
+ * @private
+ * @param {number} currentMinutes
+ * @param {Object} config
+ * @returns {boolean}
+ */
+const isOnBreak = (currentMinutes, config) => {
+  const range = getBreakRange(config);
+  return (
+    Boolean(range) &&
+    currentMinutes >= range.start &&
+    currentMinutes < range.end
+  );
+};
+
+/**
  * Get today's config
  * @private
  * @param {Date|string} time
@@ -95,7 +136,24 @@ const getOpenDaysMap = workingHours =>
  */
 const checkTodayAvailability = (currentDay, currentMinutes, openDays) => {
   const todayConfig = openDays.get(currentDay);
-  if (!todayConfig || todayConfig.openAllDay) return null;
+  if (!todayConfig) return null;
+
+  // On a break, the next slot is the end of the break, shown as the opening time
+  if (isOnBreak(currentMinutes, todayConfig)) {
+    const { end } = getBreakRange(todayConfig);
+    return {
+      config: {
+        ...todayConfig,
+        openHour: todayConfig.breakEndHour,
+        openMinutes: todayConfig.breakEndMinutes,
+      },
+      minutesUntilOpen: end - currentMinutes,
+      daysUntilOpen: 0,
+      dayOfWeek: currentDay,
+    };
+  }
+
+  if (todayConfig.openAllDay) return null;
 
   const todayOpenMinutes = toMinutes(
     todayConfig.openHour ?? 0,
@@ -238,13 +296,15 @@ export const isInWorkingHours = (time, utcOffset, workingHours = []) => {
   const todayConfig = getTodayConfig(time, utcOffset, workingHours);
   if (!todayConfig) return false;
 
-  // Handle all-day states
-  if (todayConfig.openAllDay) return true;
   if (todayConfig.closedAllDay) return false;
 
   // Check time-based availability
   const date = getDateInTimezone(time, utcOffset);
   const currentMinutes = toMinutes(date.getHours(), date.getMinutes());
+
+  // The break closes the inbox, even on days open all day
+  if (isOnBreak(currentMinutes, todayConfig)) return false;
+  if (todayConfig.openAllDay) return true;
 
   const openMinutes = toMinutes(
     todayConfig.openHour ?? 0,

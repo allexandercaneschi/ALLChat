@@ -964,6 +964,22 @@ RSpec.describe 'Inboxes API', type: :request do
         expect(inbox.reload.weekly_schedule.find { |schedule| schedule['day_of_week'] == 0 }['open_hour']).to eq 9
       end
 
+      it 'updates the lunch break of a working day when administrator' do
+        params = {
+          working_hours: [{ 'day_of_week' => 1, 'open_hour' => 8, 'open_minutes' => 0, 'close_hour' => 18, 'close_minutes' => 0,
+                            'break_start_hour' => 12, 'break_start_minutes' => 0, 'break_end_hour' => 13, 'break_end_minutes' => 30 }],
+          working_hours_enabled: true
+        }
+        patch "/api/v1/accounts/#{account.id}/inboxes/#{inbox.id}",
+              params: valid_params.merge(params),
+              headers: admin.create_new_auth_token
+
+        expect(response).to have_http_status(:success)
+        monday = inbox.reload.weekly_schedule.find { |schedule| schedule['day_of_week'] == 1 }
+        expect(monday.slice('break_start_hour', 'break_start_minutes', 'break_end_hour', 'break_end_minutes'))
+          .to eq({ 'break_start_hour' => 12, 'break_start_minutes' => 0, 'break_end_hour' => 13, 'break_end_minutes' => 30 })
+      end
+
       it 'updates the webwidget inbox to disallow the messages after conversation is resolved' do
         patch "/api/v1/accounts/#{account.id}/inboxes/#{inbox.id}",
               headers: admin.create_new_auth_token,
