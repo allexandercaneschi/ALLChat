@@ -3,7 +3,8 @@
 module OutOfOffisable
   extend ActiveSupport::Concern
 
-  OFFISABLE_ATTRS = %w[day_of_week closed_all_day open_hour open_minutes close_hour close_minutes open_all_day].freeze
+  OFFISABLE_ATTRS = %w[day_of_week closed_all_day open_hour open_minutes close_hour close_minutes open_all_day
+                       break_start_hour break_start_minutes break_end_hour break_end_minutes].freeze
   DEFAULT_WORKING_HOURS = [
     { day_of_week: 0, closed_all_day: true, open_all_day: false },
     { day_of_week: 1, open_hour: 9, open_minutes: 0, close_hour: 17, close_minutes: 0, open_all_day: false },
@@ -36,7 +37,11 @@ module OutOfOffisable
         'open_minutes' => wh.open_minutes,
         'close_hour' => wh.close_hour,
         'close_minutes' => wh.close_minutes,
-        'open_all_day' => wh.open_all_day
+        'open_all_day' => wh.open_all_day,
+        'break_start_hour' => wh.break_start_hour,
+        'break_start_minutes' => wh.break_start_minutes,
+        'break_end_hour' => wh.break_end_hour,
+        'break_end_minutes' => wh.break_end_minutes
       }
     end
   end
@@ -49,7 +54,11 @@ module OutOfOffisable
   #      "open_minutes"=>0,
   #      "close_hour"=>17,
   #      "close_minutes"=>0,
-  #      "open_all_day=>false" },...]
+  #      "open_all_day=>false",
+  #      "break_start_hour"=>12,    # optional break, all four fields or none
+  #      "break_start_minutes"=>0,
+  #      "break_end_hour"=>13,
+  #      "break_end_minutes"=>0 },...]
   def update_working_hours(params)
     ActiveRecord::Base.transaction do
       params.each do |working_hour|

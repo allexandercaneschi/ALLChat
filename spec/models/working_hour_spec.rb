@@ -108,4 +108,90 @@ RSpec.describe WorkingHour do
       expect(described_class.today.open_now?).to be true
     end
   end
+
+  context 'when there is a lunch break' do
+    let(:break_attrs) { { break_start_hour: 12, break_start_minutes: 0, break_end_hour: 13, break_end_minutes: 0 } }
+
+    before do
+      Time.zone = 'UTC'
+      create(:working_hour, **break_attrs)
+    end
+
+    it 'is open before the break' do
+      travel_to '26.10.2020 11:59'.to_datetime
+      expect(described_class.today.open_now?).to be true
+    end
+
+    it 'is closed when the break starts' do
+      travel_to '26.10.2020 12:00'.to_datetime
+      expect(described_class.today.closed_now?).to be true
+    end
+
+    it 'is closed in the middle of the break' do
+      travel_to '26.10.2020 12:30'.to_datetime
+      expect(described_class.today.closed_now?).to be true
+    end
+
+    it 'is open again when the break ends' do
+      travel_to '26.10.2020 13:00'.to_datetime
+      expect(described_class.today.open_now?).to be true
+    end
+
+    it 'is closed after closing time' do
+      travel_to '26.10.2020 17:30'.to_datetime
+      expect(described_class.today.closed_now?).to be true
+    end
+  end
+
+  context 'when validating the break' do
+    let(:inbox) { create(:inbox) }
+    let(:valid_break) { { break_start_hour: 12, break_start_minutes: 0, break_end_hour: 13, break_end_minutes: 30 } }
+
+    def build_hour(**attrs)
+      build(:working_hour, inbox: inbox, **attrs)
+    end
+
+    it 'accepts working hours without a break' do
+      expect(build_hour).to be_valid
+    end
+
+    it 'accepts a complete break inside the working hours' do
+      expect(build_hour(**valid_break)).to be_valid
+    end
+
+    it 'rejects a break with only some of the fields' do
+      working_hour = build_hour(break_start_hour: 12, break_start_minutes: 0)
+
+      expect(working_hour).not_to be_valid
+      expect(working_hour.errors[:base]).to include('Break needs a start and an end time')
+    end
+
+    it 'rejects a break that ends before it starts' do
+      working_hour = build_hour(break_start_hour: 13, break_start_minutes: 0, break_end_hour: 12, break_end_minutes: 0)
+
+      expect(working_hour).not_to be_valid
+      expect(working_hour.errors[:base]).to include('Break end cannot be before break start')
+    end
+
+    it 'rejects a break outside the working hours' do
+      working_hour = build_hour(break_start_hour: 16, break_start_minutes: 30, break_end_hour: 18, break_end_minutes: 0)
+
+      expect(working_hour).not_to be_valid
+      expect(working_hour.errors[:base]).to include('Break must be inside the working hours')
+    end
+
+    it 'rejects out of range break times' do
+      working_hour = build_hour(break_start_hour: 25, break_start_minutes: 0, break_end_hour: 26, break_end_minutes: 0)
+
+      expect(working_hour).not_to be_valid
+      expect(working_hour.errors[:base]).to include('Break time is out of range')
+    end
+
+    it 'clears the break when the day is closed all day' do
+      working_hour = build_hour(closed_all_day: true, **valid_break)
+
+      expect(working_hour).to be_valid
+      expect(working_hour.break?).to be false
+    end
+  end
 end

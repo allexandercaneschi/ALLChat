@@ -56,21 +56,51 @@ class Sla::BusinessHoursService
       @current_time = next_business_day_start(@current_time)
       false
     else
+      skip_break(working_hour)
       true
     end
   end
 
+  # The SLA clock does not run during the break, so a time inside it moves to the end of the break.
+  def skip_break(working_hour)
+    return unless working_hour.break?
+    return unless @current_time >= break_start_time_for(working_hour) && @current_time < break_end_time_for(working_hour)
+
+    @current_time = break_end_time_for(working_hour)
+  end
+
   def consume_available_seconds(working_hour)
-    day_close_time = day_close_time_for(working_hour)
-    available_seconds = (day_close_time - @current_time).to_i
+    period_end_time = period_end_time_for(working_hour)
+    available_seconds = (period_end_time - @current_time).to_i
 
     if @remaining_seconds <= available_seconds
       @current_time += @remaining_seconds.seconds
       @remaining_seconds = 0
     else
       @remaining_seconds -= available_seconds
-      @current_time = next_business_day_start(@current_time)
+      @current_time = next_period_start(working_hour, period_end_time)
     end
+  end
+
+  # The working period ends at the start of the break, when it is still ahead, or at closing time.
+  def period_end_time_for(working_hour)
+    return break_start_time_for(working_hour) if working_hour.break? && @current_time < break_start_time_for(working_hour)
+
+    day_close_time_for(working_hour)
+  end
+
+  def next_period_start(working_hour, period_end_time)
+    return break_end_time_for(working_hour) if working_hour.break? && period_end_time == break_start_time_for(working_hour)
+
+    next_business_day_start(@current_time)
+  end
+
+  def break_start_time_for(working_hour)
+    time_on_date(@current_time, working_hour.break_start_hour, working_hour.break_start_minutes)
+  end
+
+  def break_end_time_for(working_hour)
+    time_on_date(@current_time, working_hour.break_end_hour, working_hour.break_end_minutes)
   end
 
   def day_close_time_for(working_hour)
