@@ -1,0 +1,28 @@
+{
+  "INTERNAL_CHAT": {
+    "TITLE": "Team chat",
+    "OPEN": "Open team chat",
+    "CLOSE": "Close team chat",
+    "BACK": "Back to conversations",
+    "NEW_CHAT": "New chat",
+    "SEARCH_AGENT": "Search an agent",
+    "NO_AGENT_FOUND": "No agent found",
+    "NO_CHANNELS": "No conversations yet. Start one with a colleague.",
+    "NO_MESSAGES": "No messages yet. Say hello!",
+    "NO_MESSAGE_YET": "No messages yet",
+    "YOU": "You",
+    "TEAM_ROOM": "Team room",
+    "MESSAGE_PLACEHOLDER": "Write a message",
+    "SEND": "Send",
+    "LOAD_OLDER": "Load older messages",
+    "ASK_HELP": "Ask for help",
+    "ASK_HELP_TOOLTIP": "Send this message as a help request to {name} only",
+    "HELP_REQUEST": "Help request",
+    "NEW_MESSAGE_ALERT": "New message from {name}",
+    "ERRORS": {
+      "LOAD": "Could not load the team chat. Try again.",
+      "SEND": "Could not send the message. Try again.",
+      "OPEN": "Could not open this conversation. Try again."
+    }
+  }
+}

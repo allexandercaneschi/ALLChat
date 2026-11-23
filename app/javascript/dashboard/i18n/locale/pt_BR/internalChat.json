@@ -1,0 +1,28 @@
+{
+  "INTERNAL_CHAT": {
+    "TITLE": "Chat interno",
+    "OPEN": "Abrir chat interno",
+    "CLOSE": "Fechar chat interno",
+    "BACK": "Voltar para as conversas",
+    "NEW_CHAT": "Nova conversa",
+    "SEARCH_AGENT": "Buscar um agente",
+    "NO_AGENT_FOUND": "Nenhum agente encontrado",
+    "NO_CHANNELS": "Nenhuma conversa ainda. Comece uma com um colega.",
+    "NO_MESSAGES": "Nenhuma mensagem ainda. Diga olá!",
+    "NO_MESSAGE_YET": "Nenhuma mensagem ainda",
+    "YOU": "Você",
+    "TEAM_ROOM": "Sala do time",
+    "MESSAGE_PLACEHOLDER": "Escreva uma mensagem",
+    "SEND": "Enviar",
+    "LOAD_OLDER": "Carregar mensagens anteriores",
+    "ASK_HELP": "Pedir ajuda",
+    "ASK_HELP_TOOLTIP": "Enviar esta mensagem como pedido de ajuda somente para {name}",
+    "HELP_REQUEST": "Pedido de ajuda",
+    "NEW_MESSAGE_ALERT": "Nova mensagem de {name}",
+    "ERRORS": {
+      "LOAD": "Não foi possível carregar o chat interno. Tente novamente.",
+      "SEND": "Não foi possível enviar a mensagem. Tente novamente.",
+      "OPEN": "Não foi possível abrir esta conversa. Tente novamente."
+    }
+  }
+}
