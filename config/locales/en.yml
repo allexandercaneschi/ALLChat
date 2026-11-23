@@ -347,6 +347,10 @@ en:
       subject_required: 'Enter the e-mail subject'
   company_broadcasts:
     company_not_found: 'No contact has this company registered'
+  internal_chat:
+    push:
+      new_message: 'New message from %{name}'
+      help_request: '%{name} is asking for your help'
   conversations:
     requests:
       already_pending: 'There is already a pending request for this conversation'
