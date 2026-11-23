@@ -17,6 +17,7 @@ import AccountDelete from './components/AccountDelete.vue';
 import AudioTranscription from './components/AudioTranscription.vue';
 import ConversationRequestTimeout from './components/ConversationRequestTimeout.vue';
 import DataRetention from './components/DataRetention.vue';
+import InternalChatRooms from './components/InternalChatRooms.vue';
 import GoogleContactsSync from './components/GoogleContactsSync.vue';
 import SectionLayout from './components/SectionLayout.vue';
 
@@ -30,6 +31,7 @@ export default {
     AudioTranscription,
     ConversationRequestTimeout,
     DataRetention,
+    InternalChatRooms,
     GoogleContactsSync,
     SectionLayout,
     WithLabel,
@@ -255,6 +257,7 @@ export default {
     </div>
     <AudioTranscription v-if="showAudioTranscriptionConfig" />
     <ConversationRequestTimeout />
+    <InternalChatRooms />
     <DataRetention />
     <GoogleContactsSync />
     <AccountId />

@@ -46,7 +46,14 @@ const channel = computed(() => store.activeChannel);
 const messages = computed(() => store.messagesFor(channel.value.id));
 const isDirect = computed(() => channel.value.kind === CHANNEL_KINDS.DIRECT);
 const hasMore = computed(() => store.hasMoreMessages[channel.value.id]);
-const canSend = computed(() => draft.value.trim() && !isSending.value);
+// A room can be restricted to administrators, or to administrators and supervisors.
+const canPost = computed(() => channel.value.can_post !== false);
+const canAskForHelp = computed(
+  () => channel.value.kind !== CHANNEL_KINDS.COMPANY_ROOM
+);
+const canSend = computed(
+  () => canPost.value && draft.value.trim() && !isSending.value
+);
 const mentionCandidates = computed(() =>
   agents.value.filter(agent => agent.id !== currentUser.value.id)
 );
@@ -297,7 +304,17 @@ watch(query, debouncedSearch);
         />
       </div>
 
-      <div class="flex flex-col gap-2 p-3 border-t border-n-weak">
+      <p
+        v-if="!canPost"
+        class="px-4 py-3 text-sm text-center border-t border-n-weak text-n-slate-11"
+      >
+        {{
+          channel.posting_policy === 'admins_only'
+            ? $t('INTERNAL_CHAT.POSTING.ADMINS_ONLY_NOTE')
+            : $t('INTERNAL_CHAT.POSTING.ADMINS_AND_SUPERVISORS_NOTE')
+        }}
+      </p>
+      <div v-else class="flex flex-col gap-2 p-3 border-t border-n-weak">
         <ul
           v-if="showMentions"
           class="flex flex-col overflow-y-auto border rounded-lg max-h-32 border-n-weak"
@@ -362,6 +379,7 @@ watch(query, debouncedSearch);
         </div>
         <div class="flex items-center justify-between gap-2">
           <Button
+            v-if="canAskForHelp"
             v-tooltip.top="
               isDirect
                 ? $t('INTERNAL_CHAT.ASK_HELP_TOOLTIP', {
@@ -385,6 +403,7 @@ watch(query, debouncedSearch);
             solid
             blue
             sm
+            class="ms-auto"
             icon="i-lucide-send"
             :label="$t('INTERNAL_CHAT.SEND')"
             :is-loading="isSending"

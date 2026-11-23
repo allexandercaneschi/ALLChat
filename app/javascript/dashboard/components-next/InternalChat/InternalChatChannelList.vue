@@ -174,9 +174,20 @@ const startDirect = agent => open(() => store.openDirect(agent.id));
           <span
             v-else
             class="flex items-center justify-center rounded-full size-8 bg-n-alpha-2 text-n-slate-11"
-            :title="$t('INTERNAL_CHAT.TEAM_ROOM')"
+            :title="
+              channel.kind === 'company_room'
+                ? $t('INTERNAL_CHAT.COMPANY_ROOM')
+                : $t('INTERNAL_CHAT.TEAM_ROOM')
+            "
           >
-            <span class="i-lucide-users size-4" />
+            <span
+              :class="
+                channel.kind === 'company_room'
+                  ? 'i-lucide-building-2'
+                  : 'i-lucide-users'
+              "
+              class="size-4"
+            />
           </span>
           <span class="flex flex-col flex-1 min-w-0">
             <span class="text-sm font-medium truncate text-n-slate-12">

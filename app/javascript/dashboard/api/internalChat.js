@@ -50,6 +50,15 @@ class InternalChatAPI extends ApiClient {
     return axios.get(`${this.url}/search`, { params });
   }
 
+  // Settings of the rooms (administrators only)
+  getRooms() {
+    return axios.get(`${this.url}/rooms`);
+  }
+
+  updateRoom(roomId, params) {
+    return axios.patch(`${this.url}/rooms/${roomId}`, params);
+  }
+
   getAuditChannels() {
     return axios.get(`${this.url}/audit`);
   }

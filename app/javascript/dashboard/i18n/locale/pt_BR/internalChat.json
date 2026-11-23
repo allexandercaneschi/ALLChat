@@ -84,6 +84,26 @@
       "SUCCESS": "Retenção atualizada",
       "FAILED": "Não foi possível atualizar a retenção",
       "ERROR": "Use um número inteiro de dias entre 1 e 3650"
+    },
+    "COMPANY_ROOM": "Toda a empresa",
+    "POSTING": {
+      "ADMINS_ONLY_NOTE": "Só administradores podem enviar mensagens nesta sala.",
+      "ADMINS_AND_SUPERVISORS_NOTE": "Só administradores e supervisores podem enviar mensagens nesta sala.",
+      "EVERYONE": "Todos",
+      "ADMINS_ONLY": "Só administradores",
+      "ADMINS_AND_SUPERVISORS": "Administradores e supervisores"
+    },
+    "ROOMS": {
+      "TITLE": "Salas do chat",
+      "NOTE": "Escolha quem pode enviar mensagens em cada sala. Todos da sala sempre podem ler. Avisos da empresa funcionam bem com uma sala restrita.",
+      "COMPANY": "Toda a empresa",
+      "COMPANY_NOTE": "Todos os usuários da conta",
+      "TEAM_NOTE": "Membros do time",
+      "MEMBERS": "{count} membros",
+      "POSTING_LABEL": "Quem pode enviar mensagens",
+      "SUCCESS": "Sala atualizada",
+      "FAILED": "Não foi possível atualizar a sala",
+      "LOAD_FAILED": "Não foi possível carregar as salas"
     }
   }
 }

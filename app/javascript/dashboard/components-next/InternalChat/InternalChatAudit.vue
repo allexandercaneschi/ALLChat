@@ -14,6 +14,7 @@ const { t } = useI18n();
 const store = useInternalChatStore();
 
 const titleFor = channel => {
+  if (channel.kind === 'company_room') return channel.name;
   if (channel.kind === 'team_room') {
     return t('INTERNAL_CHAT.AUDIT.TEAM_ROOM', { name: channel.team?.name });
   }

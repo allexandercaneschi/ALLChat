@@ -7,6 +7,11 @@ describe('InternalChat helpers', () => {
       expect(getChannelTitle(channel)).toBe('Bruno');
     });
 
+    it('returns the company name for the company room', () => {
+      const channel = { kind: 'company_room', name: 'ALL Tecnologias' };
+      expect(getChannelTitle(channel)).toBe('ALL Tecnologias');
+    });
+
     it('returns the team name for a team room', () => {
       const channel = { kind: 'team_room', team: { name: 'suporte' } };
       expect(getChannelTitle(channel)).toBe('suporte');

@@ -6,6 +6,7 @@ import InternalChatAPI from 'dashboard/api/internalChat';
 export const CHANNEL_KINDS = {
   DIRECT: 'direct',
   TEAM_ROOM: 'team_room',
+  COMPANY_ROOM: 'company_room',
 };
 
 export const MESSAGE_KINDS = {

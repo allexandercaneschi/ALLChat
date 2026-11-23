@@ -43,6 +43,16 @@ const teamRoom = {
   last_activity_at: 1,
 };
 
+const companyRoom = {
+  id: 12,
+  kind: 'company_room',
+  name: 'ALL Tecnologias',
+  posting_policy: 'everyone',
+  can_post: true,
+  unread_count: 0,
+  last_activity_at: 1,
+};
+
 const createThread = channel => {
   const pinia = createPinia();
   setActivePinia(pinia);
@@ -263,5 +273,55 @@ describe('InternalChatThread', () => {
         mentioned_user_ids: [2],
       })
     );
+  });
+
+  describe('company room and posting policy', () => {
+    it('lets everyone write in the company room, but offers no help request there', () => {
+      const { wrapper } = createThread(companyRoom);
+
+      expect(wrapper.find('textarea').exists()).toBe(true);
+      expect(buttonByLabel(wrapper, 'INTERNAL_CHAT.ASK_HELP').exists()).toBe(
+        false
+      );
+      expect(
+        buttonByLabel(wrapper, 'INTERNAL_CHAT.HELP.ASK_TEAM').exists()
+      ).toBe(false);
+    });
+
+    it('replaces the message box with a note when the room is restricted to administrators', () => {
+      const { wrapper } = createThread({
+        ...companyRoom,
+        posting_policy: 'admins_only',
+        can_post: false,
+      });
+
+      expect(wrapper.find('textarea').exists()).toBe(false);
+      expect(wrapper.text()).toContain(
+        'INTERNAL_CHAT.POSTING.ADMINS_ONLY_NOTE'
+      );
+    });
+
+    it('says who can write when the room is restricted to administrators and supervisors', () => {
+      const { wrapper } = createThread({
+        ...teamRoom,
+        posting_policy: 'admins_and_supervisors',
+        can_post: false,
+      });
+
+      expect(wrapper.find('textarea').exists()).toBe(false);
+      expect(wrapper.text()).toContain(
+        'INTERNAL_CHAT.POSTING.ADMINS_AND_SUPERVISORS_NOTE'
+      );
+    });
+
+    it('keeps the message box for who can write in a restricted room', () => {
+      const { wrapper } = createThread({
+        ...companyRoom,
+        posting_policy: 'admins_only',
+        can_post: true,
+      });
+
+      expect(wrapper.find('textarea').exists()).toBe(true);
+    });
   });
 });
