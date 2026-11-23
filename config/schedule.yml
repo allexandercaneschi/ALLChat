@@ -116,3 +116,10 @@ broadcast_auto_resolve_job:
   cron: '*/5 * * * *'
   class: 'Broadcasts::AutoResolveJob'
   queue: scheduled_jobs
+
+# ALLChat: daily at 03:00 UTC. Removes expired internal chat messages and resolved customer conversations,
+# only for accounts that turned the retention cleanup on (off by default).
+retention_purge_expired_job:
+  cron: '0 3 * * *'
+  class: 'Retention::PurgeExpiredJob'
+  queue: scheduled_jobs

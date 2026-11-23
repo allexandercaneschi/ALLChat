@@ -6,6 +6,7 @@ import { computed } from 'vue';
 import { FEATURE_FLAGS } from 'dashboard/featureFlags';
 import { useMapGetter } from 'dashboard/composables/store';
 import { useKeyboardEvents } from 'dashboard/composables/useKeyboardEvents';
+import { useInternalChatStore } from 'dashboard/stores/internalChat';
 
 const { updateUISettings } = useUISettings();
 
@@ -26,10 +27,17 @@ const isCopilotPanelOpen = computed(
   () => uiSettings.value.is_copilot_panel_open
 );
 
+// ALLChat: the internal chat column alternates with the contact and copilot columns.
+const internalChatStore = useInternalChatStore();
+const isInternalChatOpen = computed(
+  () => uiSettings.value.is_internal_chat_open
+);
+
 const handleConversationSidebarToggle = () => {
   updateUISettings({
     is_contact_sidebar_open: !isContactSidebarOpen.value,
     is_copilot_panel_open: false,
+    is_internal_chat_open: false,
   });
 };
 
@@ -37,6 +45,15 @@ const handleCopilotSidebarToggle = () => {
   updateUISettings({
     is_contact_sidebar_open: false,
     is_copilot_panel_open: !isCopilotPanelOpen.value,
+    is_internal_chat_open: false,
+  });
+};
+
+const handleInternalChatToggle = () => {
+  updateUISettings({
+    is_contact_sidebar_open: false,
+    is_copilot_panel_open: false,
+    is_internal_chat_open: !isInternalChatOpen.value,
   });
 };
 
@@ -78,5 +95,25 @@ useKeyboardEvents(keyboardEvents);
       icon="i-woot-captain"
       @click="handleCopilotSidebarToggle"
     />
+    <div class="relative">
+      <Button
+        v-tooltip.bottom="$t('INTERNAL_CHAT.TITLE')"
+        ghost
+        slate
+        sm
+        class="!rounded-full transition-all duration-[250ms] ease-out active:!scale-95 active:duration-75"
+        :class="{
+          'bg-n-alpha-2 active:shadow-sm': isInternalChatOpen,
+        }"
+        icon="i-lucide-messages-square"
+        @click="handleInternalChatToggle"
+      />
+      <span
+        v-if="internalChatStore.totalUnread"
+        class="absolute flex items-center justify-center h-4 px-1 text-xs font-medium text-white rounded-full pointer-events-none -top-1 -end-1 min-w-4 bg-n-ruby-9"
+      >
+        {{ internalChatStore.totalUnread }}
+      </span>
+    </div>
   </ButtonGroup>
 </template>

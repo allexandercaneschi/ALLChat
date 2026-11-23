@@ -347,6 +347,18 @@ en:
       subject_required: 'Enter the e-mail subject'
   company_broadcasts:
     company_not_found: 'No contact has this company registered'
+  internal_chat:
+    claimed_message: 'I took your help request: "%{content}"'
+    push:
+      new_message: 'New message from %{name}'
+      help_request: '%{name} is asking for your help'
+      help_request_team: '%{name} asked the team for help'
+      nudge: '%{name} is calling your attention'
+      mention: '%{name} mentioned you'
+    errors:
+      nudge_too_soon: 'You can get their attention again in %{seconds} seconds'
+      already_claimed: 'Someone already took this help request'
+      not_a_help_request: 'This message is not a help request'
   conversations:
     requests:
       already_pending: 'There is already a pending request for this conversation'

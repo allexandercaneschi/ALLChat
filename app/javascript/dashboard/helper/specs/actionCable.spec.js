@@ -3,11 +3,16 @@ import ActionCableConnector from '../actionCable';
 import { FEATURE_FLAGS } from 'dashboard/featureFlags';
 import { BUS_EVENTS } from 'shared/constants/busEvents';
 import { emitter } from 'shared/helpers/mitt';
+import { useInternalChatStore } from 'dashboard/stores/internalChat';
 
 vi.mock('shared/helpers/mitt', () => ({
   emitter: {
     emit: vi.fn(),
   },
+}));
+
+vi.mock('dashboard/stores/internalChat', () => ({
+  useInternalChatStore: vi.fn(),
 }));
 
 vi.mock('dashboard/composables/useImpersonation', () => ({
@@ -429,5 +434,92 @@ describe('ActionCableConnector - Copilot Tests', () => {
       vi.advanceTimersByTime(4000);
       expect(mockDispatch).toHaveBeenCalledTimes(2);
     });
+  });
+});
+
+describe('ActionCableConnector - internal chat', () => {
+  let actionCable;
+  let receiveMessage;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    receiveMessage = vi.fn();
+    useInternalChatStore.mockReturnValue({ receiveMessage });
+    actionCable = ActionCableConnector.init(
+      {
+        dispatch: vi.fn(),
+        getters: { getCurrentAccountId: 1, getCurrentUserID: 7 },
+      },
+      'test-token'
+    );
+  });
+
+  const messageEvent = {
+    event: 'internal_chat.message.created',
+    data: { id: 1, channel_id: 10, account_id: 1, sender: { id: 2 } },
+  };
+
+  it('registers the internal_chat.message.created handler', () => {
+    expect(actionCable.events['internal_chat.message.created']).toBe(
+      actionCable.onInternalChatMessageCreated
+    );
+  });
+
+  it('hands the message to the store and alerts when it is unseen', async () => {
+    receiveMessage.mockResolvedValue({ alert: true, attention: false });
+
+    await actionCable.onInternalChatMessageCreated(messageEvent.data);
+
+    expect(receiveMessage).toHaveBeenCalledWith(messageEvent.data, 7);
+    expect(emitter.emit).toHaveBeenCalledWith(
+      BUS_EVENTS.INTERNAL_CHAT_NEW_MESSAGE,
+      messageEvent.data
+    );
+  });
+
+  it('calls attention for a nudge, an urgent message or a mention, instead of a plain alert', async () => {
+    receiveMessage.mockResolvedValue({ alert: true, attention: true });
+
+    await actionCable.onInternalChatMessageCreated(messageEvent.data);
+
+    expect(emitter.emit).toHaveBeenCalledWith(
+      BUS_EVENTS.INTERNAL_CHAT_ATTENTION,
+      messageEvent.data
+    );
+    expect(emitter.emit).not.toHaveBeenCalledWith(
+      BUS_EVENTS.INTERNAL_CHAT_NEW_MESSAGE,
+      expect.anything()
+    );
+  });
+
+  it('does not alert for messages already seen', async () => {
+    receiveMessage.mockResolvedValue({ alert: false, attention: false });
+
+    await actionCable.onInternalChatMessageCreated(messageEvent.data);
+
+    expect(emitter.emit).not.toHaveBeenCalled();
+  });
+
+  it('updates a help request that was taken or resolved', () => {
+    const replaceMessage = vi.fn();
+    useInternalChatStore.mockReturnValue({ replaceMessage });
+
+    actionCable.onReceived({
+      event: 'internal_chat.message.updated',
+      data: { ...messageEvent.data, resolved_at: 5 },
+    });
+
+    expect(replaceMessage).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 1, resolved_at: 5 })
+    );
+  });
+
+  it('ignores events of another account', () => {
+    actionCable.onReceived({
+      ...messageEvent,
+      data: { ...messageEvent.data, account_id: 99 },
+    });
+
+    expect(receiveMessage).not.toHaveBeenCalled();
   });
 });

@@ -27,6 +27,7 @@ import generalSettings from './generalSettings.json';
 import helpCenter from './helpCenter.json';
 import inbox from './inbox.json';
 import inboxMgmt from './inboxMgmt.json';
+import internalChat from './internalChat.json';
 import integrationApps from './integrationApps.json';
 import integrations from './integrations.json';
 import labelsMgmt from './labelsMgmt.json';
@@ -79,6 +80,7 @@ export default {
   ...helpCenter,
   ...inbox,
   ...inboxMgmt,
+  ...internalChat,
   ...integrationApps,
   ...integrations,
   ...labelsMgmt,

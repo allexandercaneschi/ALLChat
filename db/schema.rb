@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_11_18_190000) do
+ActiveRecord::Schema[7.1].define(version: 2026_11_23_135144) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -1402,6 +1402,59 @@ ActiveRecord::Schema[7.1].define(version: 2026_11_18_190000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.jsonb "settings", default: {}
+  end
+
+  create_table "internal_chat_audit_logs", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "auditor_id", null: false
+    t.bigint "channel_id", null: false
+    t.string "action", null: false
+    t.datetime "created_at", null: false
+    t.index ["account_id", "created_at"], name: "index_internal_chat_audit_logs_on_account_id_and_created_at"
+    t.index ["channel_id"], name: "index_internal_chat_audit_logs_on_channel_id"
+  end
+
+  create_table "internal_chat_channels", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.integer "kind", default: 0, null: false
+    t.bigint "team_id"
+    t.string "direct_key"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "posting_policy", default: 0, null: false
+    t.index ["account_id", "direct_key"], name: "index_internal_chat_channels_on_account_and_direct_key", unique: true, where: "(direct_key IS NOT NULL)"
+    t.index ["account_id", "team_id"], name: "index_internal_chat_channels_on_account_and_team", unique: true, where: "(team_id IS NOT NULL)"
+    t.index ["account_id"], name: "index_internal_chat_channels_company_room_per_account", unique: true, where: "(kind = 2)"
+  end
+
+  create_table "internal_chat_messages", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "channel_id", null: false
+    t.bigint "sender_id", null: false
+    t.bigint "recipient_id"
+    t.bigint "conversation_id"
+    t.integer "kind", default: 0, null: false
+    t.text "content", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.boolean "urgent", default: false, null: false
+    t.bigint "mentioned_user_ids", default: [], null: false, array: true
+    t.bigint "claimed_by_id"
+    t.datetime "claimed_at"
+    t.datetime "resolved_at"
+    t.index ["channel_id", "id"], name: "index_internal_chat_messages_on_channel_id_and_id"
+    t.index ["content"], name: "index_internal_chat_messages_on_content_trgm", opclass: :gin_trgm_ops, using: :gin
+    t.index ["created_at"], name: "index_internal_chat_messages_on_created_at"
+  end
+
+  create_table "internal_chat_participants", force: :cascade do |t|
+    t.bigint "channel_id", null: false
+    t.bigint "user_id", null: false
+    t.bigint "last_read_message_id", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["channel_id", "user_id"], name: "index_internal_chat_participants_on_channel_id_and_user_id", unique: true
+    t.index ["user_id"], name: "index_internal_chat_participants_on_user_id"
   end
 
   create_table "labels", force: :cascade do |t|

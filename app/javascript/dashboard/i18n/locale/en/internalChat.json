@@ -1,0 +1,109 @@
+{
+  "INTERNAL_CHAT": {
+    "TITLE": "Team chat",
+    "OPEN": "Open team chat",
+    "CLOSE": "Close team chat",
+    "BACK": "Back to conversations",
+    "NEW_CHAT": "New chat",
+    "SEARCH_AGENT": "Search an agent",
+    "NO_AGENT_FOUND": "No agent found",
+    "NO_CHANNELS": "No conversations yet. Start one with a colleague.",
+    "NO_MESSAGES": "No messages yet. Say hello!",
+    "NO_MESSAGE_YET": "No messages yet",
+    "YOU": "You",
+    "TEAM_ROOM": "Team room",
+    "MESSAGE_PLACEHOLDER": "Write a message",
+    "SEND": "Send",
+    "LOAD_OLDER": "Load older messages",
+    "ASK_HELP": "Ask for help",
+    "ASK_HELP_TOOLTIP": "Send this message as a help request to {name} only",
+    "HELP_REQUEST": "Help request",
+    "NEW_MESSAGE_ALERT": "New message from {name}",
+    "ERRORS": {
+      "LOAD": "Could not load the team chat. Try again.",
+      "SEND": "Could not send the message. Try again.",
+      "OPEN": "Could not open this conversation. Try again.",
+      "NUDGE": "Wait a bit before calling their attention again.",
+      "CLAIM": "Could not take this help request. Maybe someone already did.",
+      "SEARCH": "Could not search. Try again."
+    },
+    "SEARCH": {
+      "ALL": "Search all conversations",
+      "ONE": "Search this conversation",
+      "NO_RESULTS": "No messages found",
+      "OPEN": "Search",
+      "CLOSE": "Close search",
+      "MORE": "Show more results"
+    },
+    "URGENT": {
+      "LABEL": "Urgent",
+      "TOOLTIP": "Mark as urgent: the person is notified even outside business hours",
+      "BADGE": "Urgent"
+    },
+    "NUDGE": {
+      "BUTTON": "Get attention",
+      "WAIT": "Wait {seconds}s",
+      "TOOLTIP": "Call their attention (can't be used again right away)",
+      "FROM_OTHER": "{name} called your attention",
+      "FROM_ME": "You called their attention"
+    },
+    "MENTION": {
+      "BUTTON": "Mention a colleague",
+      "NOTIFIES": "Mentioning notifies the person even outside business hours"
+    },
+    "HELP": {
+      "ASK_TEAM": "Ask the team for help",
+      "STATUS_OPEN": "Waiting for someone to take it",
+      "STATUS_TAKEN": "Taken by {name}",
+      "STATUS_RESOLVED": "Resolved",
+      "CLAIM": "Take it",
+      "RESOLVE": "Mark as resolved",
+      "TAKEN_JOINED": "You joined the customer conversation as a participant",
+      "TAKEN_NOT_JOINED": "You have no access to the inbox of that customer conversation"
+    },
+    "ATTENTION": {
+      "NUDGE": "{name} is calling your attention",
+      "URGENT": "Urgent message from {name}",
+      "MENTION": "{name} mentioned you"
+    },
+    "AUDIT": {
+      "TITLE": "Audit",
+      "NOTE": "Audit mode: every conversation you open here is recorded.",
+      "EMPTY": "No conversations to audit.",
+      "BETWEEN": "{first} and {second}",
+      "TEAM_ROOM": "Team room: {name}"
+    },
+    "DATA_RETENTION": {
+      "TITLE": "Data retention",
+      "NOTE": "How long internal chat messages and resolved customer conversations are kept. Nothing is deleted unless the automatic cleanup is turned on.",
+      "INTERNAL_LABEL": "Internal chat (days)",
+      "CONVERSATIONS_LABEL": "Resolved customer conversations (days)",
+      "CLEANUP_LABEL": "Delete automatically what is past these periods",
+      "CLEANUP_NOTE": "Deleting can't be undone. Check what would be removed first with the retention:report task.",
+      "SAVE": "Save",
+      "SUCCESS": "Retention settings updated",
+      "FAILED": "Could not update the retention settings",
+      "ERROR": "Use a whole number of days between 1 and 3650"
+    },
+    "COMPANY_ROOM": "Whole company",
+    "POSTING": {
+      "ADMINS_ONLY_NOTE": "Only administrators can send messages in this room.",
+      "ADMINS_AND_SUPERVISORS_NOTE": "Only administrators and supervisors can send messages in this room.",
+      "EVERYONE": "Everyone",
+      "ADMINS_ONLY": "Only administrators",
+      "ADMINS_AND_SUPERVISORS": "Administrators and supervisors"
+    },
+    "ROOMS": {
+      "TITLE": "Chat rooms",
+      "NOTE": "Choose who can send messages in each room. Everyone in the room can always read. Company announcements work well with a restricted room.",
+      "COMPANY": "Whole company",
+      "COMPANY_NOTE": "Every user of the account",
+      "TEAM_NOTE": "Members of the team",
+      "MEMBERS": "{count} members",
+      "POSTING_LABEL": "Who can send messages",
+      "SUCCESS": "Room updated",
+      "FAILED": "Could not update the room",
+      "LOAD_FAILED": "Could not load the rooms"
+    }
+  }
+}

@@ -286,6 +286,18 @@ pt_BR:
     delivery:
       invalid_inbox: 'A caixa de entrada deve ser de WhatsApp ou API'
       subject_required: 'Informe o assunto do e-mail'
+  internal_chat:
+    claimed_message: 'Assumi o seu pedido de ajuda: "%{content}"'
+    push:
+      new_message: 'Nova mensagem de %{name}'
+      help_request: '%{name} está pedindo a sua ajuda'
+      help_request_team: '%{name} pediu ajuda ao time'
+      nudge: '%{name} está chamando a sua atenção'
+      mention: '%{name} mencionou você'
+    errors:
+      nudge_too_soon: 'Você poderá chamar a atenção de novo em %{seconds} segundos'
+      already_claimed: 'Alguém já assumiu este pedido de ajuda'
+      not_a_help_request: 'Esta mensagem não é um pedido de ajuda'
   conversations:
     requests:
       already_pending: 'Já existe uma solicitação pendente para esta conversa'

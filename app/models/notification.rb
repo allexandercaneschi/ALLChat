@@ -44,7 +44,9 @@ class Notification < ApplicationRecord
     sla_missed_first_response: 6,
     sla_missed_next_response: 7,
     sla_missed_resolution: 8,
-    voice_call_missed: 9
+    voice_call_missed: 9,
+    # ALLChat: internal team chat. Only registers the user preference flag, no Notification record is created for it.
+    internal_message: 10
   }.freeze
 
   enum notification_type: NOTIFICATION_TYPES

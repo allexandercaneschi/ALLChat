@@ -172,7 +172,8 @@
           "PARTICIPATING_CONVERSATION_NEW_MESSAGE": "Uma nova mensagem foi criada em uma conversa que você participa",
           "SLA_MISSED_FIRST_RESPONSE": "Uma conversa perde o SLA de primeira resposta",
           "SLA_MISSED_NEXT_RESPONSE": "Uma conversa perde o SLA da próxima resposta",
-          "SLA_MISSED_RESOLUTION": "Uma conversa perde o SLA de resolução"
+          "SLA_MISSED_RESOLUTION": "Uma conversa perde o SLA de resolução",
+          "INTERNAL_MESSAGE": "Você recebe uma mensagem do chat interno (somente push)"
         },
         "BROWSER_PERMISSION": "Ative notificações push em seu navegador para poder recebê-las"
       },
