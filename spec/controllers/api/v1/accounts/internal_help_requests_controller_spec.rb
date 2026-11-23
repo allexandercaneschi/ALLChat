@@ -66,4 +66,36 @@ RSpec.describe 'Internal chat help requests API', type: :request do
 
     expect(response).to have_http_status(:not_found)
   end
+
+  describe 'to a whole team' do
+    let(:team) { create(:team, account: account) }
+
+    before { [ana, bruno].each { |user| create(:team_member, team: team, user: user) } }
+
+    it 'posts the request in the room of the team and notifies every other member' do
+      expect do
+        post path, params: { team_id: team.id, content: 'alguém sabe configurar o DNS?' }, headers: ana.create_new_auth_token, as: :json
+      end.to have_enqueued_job(InternalChat::PushNotificationJob).with(anything, bruno.id).exactly(:once)
+
+      expect(response).to have_http_status(:success)
+      message = InternalChat::Message.last
+      expect(message).to be_help_request
+      expect(message.recipient).to be_nil
+      expect(message.channel.team).to eq(team)
+    end
+
+    it 'refuses a team the agent does not belong to' do
+      other_team = create(:team, account: account)
+
+      post path, params: { team_id: other_team.id, content: 'ajuda' }, headers: ana.create_new_auth_token, as: :json
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+
+    it 'refuses a request for a person and a team at once' do
+      post path, params: { team_id: team.id, recipient_id: bruno.id, content: 'ajuda' }, headers: ana.create_new_auth_token, as: :json
+
+      expect(response).to have_http_status(:unprocessable_entity)
+    end
+  end
 end

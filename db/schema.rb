@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_11_23_120431) do
+ActiveRecord::Schema[7.1].define(version: 2026_11_23_125947) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -1404,6 +1404,16 @@ ActiveRecord::Schema[7.1].define(version: 2026_11_23_120431) do
     t.jsonb "settings", default: {}
   end
 
+  create_table "internal_chat_audit_logs", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "auditor_id", null: false
+    t.bigint "channel_id", null: false
+    t.string "action", null: false
+    t.datetime "created_at", null: false
+    t.index ["account_id", "created_at"], name: "index_internal_chat_audit_logs_on_account_id_and_created_at"
+    t.index ["channel_id"], name: "index_internal_chat_audit_logs_on_channel_id"
+  end
+
   create_table "internal_chat_channels", force: :cascade do |t|
     t.bigint "account_id", null: false
     t.integer "kind", default: 0, null: false
@@ -1425,7 +1435,13 @@ ActiveRecord::Schema[7.1].define(version: 2026_11_23_120431) do
     t.text "content", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "urgent", default: false, null: false
+    t.bigint "mentioned_user_ids", default: [], null: false, array: true
+    t.bigint "claimed_by_id"
+    t.datetime "claimed_at"
+    t.datetime "resolved_at"
     t.index ["channel_id", "id"], name: "index_internal_chat_messages_on_channel_id_and_id"
+    t.index ["content"], name: "index_internal_chat_messages_on_content_trgm", opclass: :gin_trgm_ops, using: :gin
     t.index ["created_at"], name: "index_internal_chat_messages_on_created_at"
   end
 

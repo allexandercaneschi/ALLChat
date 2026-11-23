@@ -48,4 +48,39 @@ RSpec.describe InternalChat::Messages::CreateService do
   it 'does not create the message when the sender is not a member' do
     expect { described_class.new(channel: channel, sender: carla, content: 'oi').perform }.to raise_error(ActiveRecord::RecordInvalid)
   end
+
+  describe 'attention nudge' do
+    it 'can not be used again before the cooldown' do
+      described_class.new(channel: channel, sender: ana, kind: :nudge).perform
+
+      expect { described_class.new(channel: channel, sender: ana, kind: :nudge).perform }
+        .to raise_error(CustomExceptions::InternalChat::NudgeTooSoon) { |error| expect(error.to_hash[:retry_after]).to be_between(1, 60) }
+    end
+
+    it 'can be used again after the cooldown' do
+      described_class.new(channel: channel, sender: ana, kind: :nudge).perform
+
+      travel_to(61.seconds.from_now) do
+        expect { described_class.new(channel: channel, sender: ana, kind: :nudge).perform }.not_to raise_error
+      end
+    end
+
+    it 'has a cooldown for each person' do
+      described_class.new(channel: channel, sender: ana, kind: :nudge).perform
+
+      expect { described_class.new(channel: channel, sender: bruno, kind: :nudge).perform }.not_to raise_error
+    end
+  end
+
+  describe 'mentions' do
+    it 'keeps only members of the channel, never the sender' do
+      team = create(:team, account: account)
+      [ana, bruno].each { |user| create(:team_member, team: team, user: user) }
+      room = InternalChat::Channel.find_or_create_for_team!(account, team)
+
+      message = described_class.new(channel: room, sender: ana, content: '@bruno @carla', mentioned_user_ids: [bruno.id, carla.id, ana.id]).perform
+
+      expect(message.mentioned_user_ids).to eq([bruno.id])
+    end
+  end
 end

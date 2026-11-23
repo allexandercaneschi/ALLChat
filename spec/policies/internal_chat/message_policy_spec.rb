@@ -18,4 +18,27 @@ RSpec.describe InternalChat::MessagePolicy, type: :policy do
     it { expect(message_policy).to permit(context_for(ana), message) }
     it { expect(message_policy).not_to permit(context_for(carla), message) }
   end
+
+  context 'with a help request' do
+    let(:help_request) do
+      InternalChat::Message.create!(account: account, channel: channel, sender: ana, recipient: bruno, kind: :help_request, content: 'ajuda')
+    end
+
+    permissions :claim? do
+      it { expect(message_policy).to permit(context_for(bruno), help_request) }
+      it { expect(message_policy).not_to permit(context_for(ana), help_request) }
+      it { expect(message_policy).not_to permit(context_for(carla), help_request) }
+    end
+
+    permissions :resolve? do
+      it { expect(message_policy).to permit(context_for(ana), help_request) }
+      it { expect(message_policy).not_to permit(context_for(bruno), help_request) }
+
+      it 'is open to who took it' do
+        help_request.claim!(bruno)
+
+        expect(message_policy).to permit(context_for(bruno), help_request.reload)
+      end
+    end
+  end
 end
