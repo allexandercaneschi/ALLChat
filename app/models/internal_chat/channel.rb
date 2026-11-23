@@ -41,6 +41,23 @@ class InternalChat::Channel < ApplicationRecord
     )
   }
 
+  # Conversations an auditor may read (besides their own):
+  # - administrators: every channel of the account;
+  # - supervisors: the rooms of the teams they belong to and the direct conversations where at least
+  #   one of the two people belongs to one of those teams.
+  scope :auditable_by, lambda { |user, account_user, account|
+    channels = where(account: account)
+    next channels if account_user.administrator?
+    next none unless account_user.supervisor?
+
+    team_ids = TeamMember.where(user_id: user.id).select(:team_id)
+    channels.where(
+      'internal_chat_channels.team_id IN (:team_ids) OR (internal_chat_channels.kind = :direct AND internal_chat_channels.id IN (' \
+      'SELECT channel_id FROM internal_chat_participants WHERE user_id IN (SELECT user_id FROM team_members WHERE team_id IN (:team_ids))))',
+      team_ids: team_ids, direct: kinds[:direct]
+    )
+  }
+
   def self.direct_key_for(user_a_id, user_b_id)
     [user_a_id, user_b_id].sort.join(':')
   end
