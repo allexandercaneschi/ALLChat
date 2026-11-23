@@ -18,6 +18,9 @@ module AccountSettingsSchema
         'conversation_request_timeout': { 'type': %w[integer null], 'minimum': 1, 'maximum': 1440 },
         # ALLChat: days to keep internal chat messages (nothing is deleted yet)
         'internal_chat_retention_days': { 'type': %w[integer null], 'minimum': 1, 'maximum': 3650 },
+        # ALLChat: days to keep resolved customer conversations and the switch that allows the cleanup
+        'conversation_retention_days': { 'type': %w[integer null], 'minimum': 1, 'maximum': 3650 },
+        'retention_cleanup_enabled': { 'type': %w[boolean null] },
         'keep_pending_on_bot_failure': { 'type': %w[boolean null] },
         'captain_auto_resolve_mode': { 'type': %w[string null], 'enum': ['evaluated', 'legacy', 'disabled', nil] },
         'conversation_required_attributes': {
