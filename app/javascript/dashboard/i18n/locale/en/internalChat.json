@@ -22,7 +22,68 @@
     "ERRORS": {
       "LOAD": "Could not load the team chat. Try again.",
       "SEND": "Could not send the message. Try again.",
-      "OPEN": "Could not open this conversation. Try again."
+      "OPEN": "Could not open this conversation. Try again.",
+      "NUDGE": "Wait a bit before calling their attention again.",
+      "CLAIM": "Could not take this help request. Maybe someone already did.",
+      "SEARCH": "Could not search. Try again."
+    },
+    "SEARCH": {
+      "ALL": "Search all conversations",
+      "ONE": "Search this conversation",
+      "NO_RESULTS": "No messages found",
+      "OPEN": "Search",
+      "CLOSE": "Close search",
+      "MORE": "Show more results"
+    },
+    "URGENT": {
+      "LABEL": "Urgent",
+      "TOOLTIP": "Mark as urgent: the person is notified even outside business hours",
+      "BADGE": "Urgent"
+    },
+    "NUDGE": {
+      "BUTTON": "Get attention",
+      "WAIT": "Wait {seconds}s",
+      "TOOLTIP": "Call their attention (can't be used again right away)",
+      "FROM_OTHER": "{name} called your attention",
+      "FROM_ME": "You called their attention"
+    },
+    "MENTION": {
+      "BUTTON": "Mention a colleague",
+      "NOTIFIES": "Mentioning notifies the person even outside business hours"
+    },
+    "HELP": {
+      "ASK_TEAM": "Ask the team for help",
+      "STATUS_OPEN": "Waiting for someone to take it",
+      "STATUS_TAKEN": "Taken by {name}",
+      "STATUS_RESOLVED": "Resolved",
+      "CLAIM": "Take it",
+      "RESOLVE": "Mark as resolved",
+      "TAKEN_JOINED": "You joined the customer conversation as a participant",
+      "TAKEN_NOT_JOINED": "You have no access to the inbox of that customer conversation"
+    },
+    "ATTENTION": {
+      "NUDGE": "{name} is calling your attention",
+      "URGENT": "Urgent message from {name}",
+      "MENTION": "{name} mentioned you"
+    },
+    "AUDIT": {
+      "TITLE": "Audit",
+      "NOTE": "Audit mode: every conversation you open here is recorded.",
+      "EMPTY": "No conversations to audit.",
+      "BETWEEN": "{first} and {second}",
+      "TEAM_ROOM": "Team room: {name}"
+    },
+    "DATA_RETENTION": {
+      "TITLE": "Data retention",
+      "NOTE": "How long internal chat messages and resolved customer conversations are kept. Nothing is deleted unless the automatic cleanup is turned on.",
+      "INTERNAL_LABEL": "Internal chat (days)",
+      "CONVERSATIONS_LABEL": "Resolved customer conversations (days)",
+      "CLEANUP_LABEL": "Delete automatically what is past these periods",
+      "CLEANUP_NOTE": "Deleting can't be undone. Check what would be removed first with the retention:report task.",
+      "SAVE": "Save",
+      "SUCCESS": "Retention settings updated",
+      "FAILED": "Could not update the retention settings",
+      "ERROR": "Use a whole number of days between 1 and 3650"
     }
   }
 }

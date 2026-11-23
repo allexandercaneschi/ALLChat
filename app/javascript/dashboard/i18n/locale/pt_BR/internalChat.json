@@ -22,7 +22,68 @@
     "ERRORS": {
       "LOAD": "Não foi possível carregar o chat interno. Tente novamente.",
       "SEND": "Não foi possível enviar a mensagem. Tente novamente.",
-      "OPEN": "Não foi possível abrir esta conversa. Tente novamente."
+      "OPEN": "Não foi possível abrir esta conversa. Tente novamente.",
+      "NUDGE": "Aguarde um pouco antes de chamar a atenção de novo.",
+      "CLAIM": "Não foi possível assumir este pedido. Talvez alguém já tenha assumido.",
+      "SEARCH": "Não foi possível buscar. Tente novamente."
+    },
+    "SEARCH": {
+      "ALL": "Buscar em todas as conversas",
+      "ONE": "Buscar nesta conversa",
+      "NO_RESULTS": "Nenhuma mensagem encontrada",
+      "OPEN": "Buscar",
+      "CLOSE": "Fechar a busca",
+      "MORE": "Mostrar mais resultados"
+    },
+    "URGENT": {
+      "LABEL": "Urgente",
+      "TOOLTIP": "Marcar como urgente: a pessoa é avisada mesmo fora do expediente",
+      "BADGE": "Urgente"
+    },
+    "NUDGE": {
+      "BUTTON": "Chamar atenção",
+      "WAIT": "Aguarde {seconds}s",
+      "TOOLTIP": "Chamar a atenção da pessoa (não pode ser usado em seguida)",
+      "FROM_OTHER": "{name} chamou a sua atenção",
+      "FROM_ME": "Você chamou a atenção da pessoa"
+    },
+    "MENTION": {
+      "BUTTON": "Mencionar um colega",
+      "NOTIFIES": "Mencionar avisa a pessoa mesmo fora do expediente"
+    },
+    "HELP": {
+      "ASK_TEAM": "Pedir ajuda ao time",
+      "STATUS_OPEN": "Aguardando alguém assumir",
+      "STATUS_TAKEN": "Assumido por {name}",
+      "STATUS_RESOLVED": "Resolvido",
+      "CLAIM": "Assumir",
+      "RESOLVE": "Marcar como resolvido",
+      "TAKEN_JOINED": "Você entrou na conversa do cliente como participante",
+      "TAKEN_NOT_JOINED": "Você não tem acesso à caixa dessa conversa do cliente"
+    },
+    "ATTENTION": {
+      "NUDGE": "{name} está chamando a sua atenção",
+      "URGENT": "Mensagem urgente de {name}",
+      "MENTION": "{name} mencionou você"
+    },
+    "AUDIT": {
+      "TITLE": "Auditoria",
+      "NOTE": "Modo auditoria: cada conversa que você abrir aqui fica registrada.",
+      "EMPTY": "Nenhuma conversa para auditar.",
+      "BETWEEN": "{first} e {second}",
+      "TEAM_ROOM": "Sala do time: {name}"
+    },
+    "DATA_RETENTION": {
+      "TITLE": "Retenção de dados",
+      "NOTE": "Por quanto tempo as mensagens do chat interno e as conversas resolvidas de clientes ficam guardadas. Nada é apagado enquanto a limpeza automática estiver desligada.",
+      "INTERNAL_LABEL": "Chat interno (dias)",
+      "CONVERSATIONS_LABEL": "Conversas resolvidas de clientes (dias)",
+      "CLEANUP_LABEL": "Apagar automaticamente o que passar desses prazos",
+      "CLEANUP_NOTE": "Apagar não tem volta. Veja antes o que seria removido com a tarefa retention:report.",
+      "SAVE": "Salvar",
+      "SUCCESS": "Retenção atualizada",
+      "FAILED": "Não foi possível atualizar a retenção",
+      "ERROR": "Use um número inteiro de dias entre 1 e 3650"
     }
   }
 }
