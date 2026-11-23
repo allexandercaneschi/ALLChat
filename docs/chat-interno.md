@@ -90,6 +90,13 @@ agora) e consultar `inbox.out_of_office?`. A decisão fica em `InternalChat::Pus
   por usuário), `Message` (texto, pedido de ajuda ou "chamar atenção") e `AuditLog`. Tabelas `internal_chat_*`, sem
   chave estrangeira no banco. Uma conversa contínua por pessoa ou time (como Spark e WhatsApp); só o pedido de ajuda
   tem estado (aberto, assumido, resolvido).
+- **Sala da empresa** (`kind: company_room`): uma por conta, com todos os usuários da conta (agentes, supervisores
+  e administradores) como membros. Criada na primeira listagem. Não aceita pedido de ajuda, urgente nem chamar atenção.
+  Push: só para quem foi mencionado; se a sala for restrita (aviso), todos são notificados.
+- **Configuração das salas** (Configurações > Conta > Salas do chat, só administrador): para a sala da empresa e a
+  sala de cada time, define **quem pode enviar**: todos, só administradores, ou administradores e supervisores.
+  Todos os membros continuam podendo ler. A regra vale para mensagens e pedidos de ajuda. A API é
+  `GET /internal_chat/rooms` e `PATCH /internal_chat/rooms/:id` (`posting_policy`).
 - **Visibilidade** (`app/policies/internal_chat/`): conversa direta só para os dois participantes; sala de time só
   para membros do time. A leitura de conversas de outros só existe pela auditoria (abaixo).
 - **API** (`/api/v1/accounts/:id/internal_chat/...`): `channels` (GET/POST), `channels/:id/read`,
@@ -147,8 +154,18 @@ agora) e consultar `inbox.out_of_office?`. A decisão fica em `InternalChat::Pus
 4. Fora do expediente só chega `@menção`, urgente em conversa privada e "chamar atenção" (com intervalo).
 5. O pedido de ajuda pode ir ao time todo; quem souber assume. Assumir não troca o responsável do cliente.
 6. Histórico completo em salas de time e conversas diretas, com busca.
+7. Uma sala para toda a empresa e uma configuração das salas com a regra de quem pode enviar (todos, só
+   administradores, ou administradores e supervisores).
 
 ## Pontos para o dono confirmar
+
+- **Sala da empresa e push:** com a sala aberta para todos enviarem, só quem foi mencionado recebe push (senão uma
+  mensagem acordaria a empresa toda). Se a sala for restrita a administradores (ou a supervisores), vira aviso e
+  todos recebem. Não existe ainda "silenciar sala" por pessoa.
+- **Sala restrita bloqueia também o pedido de ajuda** daquela sala (é uma mensagem na sala). Se quiser deixar o
+  pedido de ajuda livre nas salas de time mesmo quando restritas, é uma exceção pequena.
+- **Mais opções por sala** (renomear, arquivar, criar outras salas, escolher membros) não existem; hoje a
+  configuração é só a regra de envio.
 
 - **Apagar clientes:** a limpeza de conversas de clientes está pronta, mas desligada. Rode `retention:report` antes
   de ligar em uma conta e avalie o impacto em relatórios (conversas apagadas somem de contagens históricas).
