@@ -91,4 +91,59 @@ RSpec.describe InternalChat::Channel do
 
     expect(channel).not_to be_valid
   end
+
+  describe 'company room' do
+    let(:supervisor) { create(:user, account: account) }
+    let(:administrator) { create(:user, :administrator, account: account) }
+    let(:other_account_user) { create(:user, account: create(:account)) }
+    let(:room) { described_class.find_or_create_company_room!(account) }
+
+    before { account.account_users.find_by(user: supervisor).update!(supervisor: true) }
+
+    it 'exists once per account' do
+      expect(described_class.find_or_create_company_room!(account)).to eq(room)
+      expect(described_class.company_room.where(account: account).count).to eq(1)
+    end
+
+    it 'has every user of the account as member, and nobody from another account' do
+      [ana, bruno, administrator].each { |user| expect(room.member?(user)).to be(true) }
+      expect(room.members).to include(ana, bruno, administrator)
+      expect(room.member?(other_account_user)).to be(false)
+      expect(room.members).not_to include(other_account_user)
+    end
+
+    it 'is visible to every user of the account' do
+      expect(described_class.visible_to(ana, account)).to include(room)
+      expect(described_class.visible_to(other_account_user, account)).to include(room) # scoped by account, membership is checked by the policy
+      expect(described_class.visible_to(ana, create(:account))).not_to include(room)
+    end
+
+    it 'lets everyone send by default' do
+      expect(room.posting_policy).to eq('everyone')
+      [ana, supervisor, administrator].each { |user| expect(room.can_post?(account.account_users.find_by(user: user))).to be(true) }
+    end
+
+    it 'can be restricted to administrators' do
+      room.update!(posting_policy: :admins_only)
+
+      expect(room.can_post?(account.account_users.find_by(user: administrator))).to be(true)
+      expect(room.can_post?(account.account_users.find_by(user: supervisor))).to be(false)
+      expect(room.can_post?(account.account_users.find_by(user: ana))).to be(false)
+    end
+
+    it 'can be restricted to administrators and supervisors' do
+      room.update!(posting_policy: :admins_and_supervisors)
+
+      expect(room.can_post?(account.account_users.find_by(user: administrator))).to be(true)
+      expect(room.can_post?(account.account_users.find_by(user: supervisor))).to be(true)
+      expect(room.can_post?(account.account_users.find_by(user: ana))).to be(false)
+    end
+
+    it 'does not restrict direct conversations' do
+      direct = described_class.find_or_create_direct!(account, ana, bruno)
+
+      expect(direct.can_post?(account.account_users.find_by(user: ana))).to be(true)
+      expect(described_class.new(account: account, kind: :direct, direct_key: '1:2', posting_policy: :admins_only)).not_to be_valid
+    end
+  end
 end

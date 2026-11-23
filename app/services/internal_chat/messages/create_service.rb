@@ -54,8 +54,16 @@ class InternalChat::Messages::CreateService
   end
 
   def notify_members(message)
-    channel.members.where.not(id: sender.id).pluck(:id).each do |user_id|
+    notified_user_ids(message).each do |user_id|
       InternalChat::PushNotificationJob.perform_later(message.id, user_id)
     end
+  end
+
+  # Messages in the company room would wake up the whole company, so they only push to who was
+  # mentioned, unless the room is restricted (announcements), where everyone is notified.
+  def notified_user_ids(message)
+    return message.mentioned_user_ids if channel.company_room? && channel.posting_everyone?
+
+    channel.members.where.not(id: sender.id).pluck(:id)
   end
 end

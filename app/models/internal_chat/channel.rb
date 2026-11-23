@@ -25,19 +25,24 @@ class InternalChat::Channel < ApplicationRecord
   has_many :participants, class_name: 'InternalChat::Participant', dependent: :destroy_async
   has_many :messages, class_name: 'InternalChat::Message', dependent: :destroy_async
 
-  enum kind: { direct: 0, team_room: 1 }
+  # company_room: the single room of the account, with every user of the account as member.
+  enum kind: { direct: 0, team_room: 1, company_room: 2 }
+  # Who can send messages in a room. Direct conversations always are everyone.
+  enum posting_policy: { everyone: 0, admins_only: 1, admins_and_supervisors: 2 }, _prefix: :posting
 
   validates :direct_key, presence: true, if: :direct?
   validates :team, presence: true, if: :team_room?
+  validates :posting_policy, inclusion: { in: ['everyone'] }, if: :direct?
   validate :team_belongs_to_account
 
-  # Channels the user can see: direct channels they take part in and the rooms of their teams.
+  # Channels the user can see: direct channels they take part in, the rooms of their teams and the company room.
   scope :visible_to, lambda { |user, account|
     where(account: account).where(
       '(internal_chat_channels.kind = :direct AND ' \
       'internal_chat_channels.id IN (SELECT channel_id FROM internal_chat_participants WHERE user_id = :user_id)) OR ' \
+      'internal_chat_channels.kind = :company OR ' \
       'internal_chat_channels.team_id IN (SELECT team_id FROM team_members WHERE user_id = :user_id)',
-      user_id: user.id, direct: kinds[:direct]
+      user_id: user.id, direct: kinds[:direct], company: kinds[:company_room]
     )
   }
 
@@ -87,17 +92,37 @@ class InternalChat::Channel < ApplicationRecord
     retry
   end
 
+  def self.find_or_create_company_room!(account)
+    company_room.find_or_create_by!(account: account)
+  rescue ActiveRecord::RecordNotUnique
+    retry
+  end
+
   def direct_user_ids
     direct_key.to_s.split(':').map(&:to_i)
   end
 
   # Users who receive the messages of this channel.
   def members
-    direct? ? User.where(id: direct_user_ids) : User.where(id: TeamMember.where(team_id: team_id).select(:user_id))
+    return User.where(id: direct_user_ids) if direct?
+    return User.where(id: AccountUser.where(account_id: account_id).select(:user_id)) if company_room?
+
+    User.where(id: TeamMember.where(team_id: team_id).select(:user_id))
   end
 
   def member?(user)
-    direct? ? direct_user_ids.include?(user.id) : TeamMember.exists?(team_id: team_id, user_id: user.id)
+    return direct_user_ids.include?(user.id) if direct?
+    return AccountUser.exists?(account_id: account_id, user_id: user.id) if company_room?
+
+    TeamMember.exists?(team_id: team_id, user_id: user.id)
+  end
+
+  # Whether a member can send messages here, by the posting policy of the room.
+  def can_post?(account_user)
+    return true if direct? || posting_everyone?
+    return account_user.administrator? if posting_admins_only?
+
+    account_user.administrator_or_supervisor?
   end
 
   # Team rooms have no fixed list of participants: read pointers are created when needed, starting
@@ -112,13 +137,16 @@ class InternalChat::Channel < ApplicationRecord
     end
   end
 
-  # Channel as the given user sees it: the other person of a direct channel, or the team.
-  def push_event_data_for(user, unread_count:, last_message:)
+  # Channel as the given user sees it: the other person of a direct channel, the team or the company.
+  def push_event_data_for(user, unread_count:, last_message:, can_post:)
     other = direct? ? User.find_by(id: direct_user_ids - [user.id]) : nil
     {
       id: id,
       kind: kind,
       team: team_room? ? { id: team.id, name: team.name } : nil,
+      name: company_room? ? account.name : nil,
+      posting_policy: posting_policy,
+      can_post: can_post,
       user: other&.push_event_data,
       unread_count: unread_count,
       last_message: last_message&.push_event_data,

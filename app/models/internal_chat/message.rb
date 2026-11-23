@@ -96,12 +96,14 @@ class InternalChat::Message < ApplicationRecord
 
   # To one person (direct channel) or to the whole team (team room), never to the whole account.
   def help_request_has_a_valid_audience
-    return unless help_request?
+    return unless help_request? && channel
 
-    if channel&.direct?
+    if channel.direct?
       errors.add(:recipient, 'must be the other person in the channel') unless other_person_in_channel?(recipient)
-    elsif recipient.present?
-      errors.add(:recipient, 'must be empty in a team room')
+    elsif channel.team_room?
+      errors.add(:recipient, 'must be empty in a team room') if recipient.present?
+    else
+      errors.add(:channel, 'must be a direct channel or a team room')
     end
   end
 

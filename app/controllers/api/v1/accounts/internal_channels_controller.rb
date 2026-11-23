@@ -28,8 +28,9 @@ class Api::V1::Accounts::InternalChannelsController < Api::V1::Accounts::BaseCon
     @channel = InternalChat::Channel.where(account: Current.account).find(params[:id])
   end
 
-  # Team rooms are created the first time a member lists their channels.
+  # The company room and the team rooms are created the first time a member lists their channels.
   def ensure_team_rooms
+    InternalChat::Channel.find_or_create_company_room!(Current.account).ensure_participants!([Current.user])
     Current.user.teams.where(account: Current.account).find_each do |team|
       InternalChat::Channel.find_or_create_for_team!(Current.account, team).ensure_participants!([Current.user])
     end
@@ -70,6 +71,7 @@ class Api::V1::Accounts::InternalChannelsController < Api::V1::Accounts::BaseCon
   def channel_json(channel, channels)
     @unread_counts ||= InternalChat::Channel.unread_counts_for(Current.user, channels.map(&:id))
     @last_messages ||= last_messages_by_channel(channels)
-    channel.push_event_data_for(Current.user, unread_count: @unread_counts.fetch(channel.id, 0), last_message: @last_messages[channel.id])
+    channel.push_event_data_for(Current.user, unread_count: @unread_counts.fetch(channel.id, 0), last_message: @last_messages[channel.id],
+                                              can_post: channel.can_post?(Current.account_user))
   end
 end

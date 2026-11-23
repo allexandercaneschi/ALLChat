@@ -83,4 +83,34 @@ RSpec.describe InternalChat::Messages::CreateService do
       expect(message.mentioned_user_ids).to eq([bruno.id])
     end
   end
+
+  describe 'company room' do
+    let(:administrator) { create(:user, :administrator, account: account) }
+    let(:room) { InternalChat::Channel.find_or_create_company_room!(account) }
+
+    before { [ana, bruno, carla, administrator] }
+
+    it 'only pushes to who was mentioned while everyone can send' do
+      expect { described_class.new(channel: room, sender: ana, content: 'bom dia @bruno', mentioned_user_ids: [bruno.id]).perform }
+        .to have_enqueued_job(InternalChat::PushNotificationJob).with(anything, bruno.id).exactly(:once)
+    end
+
+    it 'does not push to anyone when nobody is mentioned' do
+      expect { described_class.new(channel: room, sender: ana, content: 'bom dia').perform }
+        .not_to have_enqueued_job(InternalChat::PushNotificationJob)
+    end
+
+    it 'notifies everyone but the sender when the room is restricted, as an announcement' do
+      room.update!(posting_policy: :admins_only)
+
+      expect { described_class.new(channel: room, sender: administrator, content: 'reunião às 15h').perform }
+        .to have_enqueued_job(InternalChat::PushNotificationJob).exactly(3).times
+    end
+
+    it 'counts the message as unread for the other members' do
+      described_class.new(channel: room, sender: ana, content: 'bom dia').perform
+
+      expect(InternalChat::Channel.unread_counts_for(bruno, [room.id])).to eq(room.id => 1)
+    end
+  end
 end

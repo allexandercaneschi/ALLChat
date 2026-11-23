@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_11_23_125947) do
+ActiveRecord::Schema[7.1].define(version: 2026_11_23_135144) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -1421,8 +1421,10 @@ ActiveRecord::Schema[7.1].define(version: 2026_11_23_125947) do
     t.string "direct_key"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "posting_policy", default: 0, null: false
     t.index ["account_id", "direct_key"], name: "index_internal_chat_channels_on_account_and_direct_key", unique: true, where: "(direct_key IS NOT NULL)"
     t.index ["account_id", "team_id"], name: "index_internal_chat_channels_on_account_and_team", unique: true, where: "(team_id IS NOT NULL)"
+    t.index ["account_id"], name: "index_internal_chat_channels_company_room_per_account", unique: true, where: "(kind = 2)"
   end
 
   create_table "internal_chat_messages", force: :cascade do |t|

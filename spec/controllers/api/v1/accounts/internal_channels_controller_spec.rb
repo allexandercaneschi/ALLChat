@@ -24,11 +24,28 @@ RSpec.describe 'Internal chat channels API', type: :request do
       get base_path, headers: ana.create_new_auth_token, as: :json
 
       expect(response).to have_http_status(:success)
-      payload = response.parsed_body['payload']
+      payload = response.parsed_body['payload'].select { |item| item['kind'] == 'direct' }
       expect(payload.size).to eq(1)
       expect(payload.first).to include('id' => channel.id, 'kind' => 'direct', 'unread_count' => 1)
       expect(payload.first['user']['id']).to eq(bruno.id)
       expect(payload.first['last_message']['content']).to eq('oi')
+    end
+
+    it 'lists the company room for every user of the account, with whether they can send' do
+      get base_path, headers: ana.create_new_auth_token, as: :json
+
+      room = response.parsed_body['payload'].find { |channel| channel['kind'] == 'company_room' }
+      expect(room).to include('name' => account.name, 'posting_policy' => 'everyone', 'can_post' => true)
+    end
+
+    it 'tells an agent they can not send in a room restricted to administrators' do
+      InternalChat::Channel.find_or_create_company_room!(account).update!(posting_policy: :admins_only)
+
+      get base_path, headers: ana.create_new_auth_token, as: :json
+      expect(response.parsed_body['payload'].find { |channel| channel['kind'] == 'company_room' }['can_post']).to be(false)
+
+      get base_path, headers: administrator.create_new_auth_token, as: :json
+      expect(response.parsed_body['payload'].find { |channel| channel['kind'] == 'company_room' }['can_post']).to be(true)
     end
 
     it 'lists the rooms of the teams of the agent only' do
@@ -38,7 +55,7 @@ RSpec.describe 'Internal chat channels API', type: :request do
 
       get base_path, headers: ana.create_new_auth_token, as: :json
 
-      payload = response.parsed_body['payload']
+      payload = response.parsed_body['payload'].reject { |channel| channel['kind'] == 'company_room' }
       expect(payload.pluck('kind')).to eq(['team_room'])
       expect(payload.first['team']).to include('id' => team.id)
     end
@@ -48,7 +65,7 @@ RSpec.describe 'Internal chat channels API', type: :request do
 
       get base_path, headers: administrator.create_new_auth_token, as: :json
 
-      expect(response.parsed_body['payload']).to eq([])
+      expect(response.parsed_body['payload'].pluck('kind')).to eq(['company_room'])
     end
   end
 

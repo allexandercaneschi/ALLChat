@@ -200,4 +200,70 @@ RSpec.describe 'Internal chat messages API', type: :request do
       expect(response.parsed_body['resolved_at']).to be_present
     end
   end
+
+  describe 'company room and posting policy' do
+    let(:administrator) { create(:user, account: account, role: :administrator) }
+    let(:room) { InternalChat::Channel.find_or_create_company_room!(account) }
+    let(:room_path) { "/api/v1/accounts/#{account.id}/internal_chat/channels/#{room.id}/messages" }
+
+    before do
+      [ana, bruno, carla]
+      account.account_users.find_by(user: bruno).update!(supervisor: true)
+    end
+
+    it 'lets any user of the account read and write in the company room' do
+      post room_path, params: { content: 'bom dia, pessoal' }, headers: ana.create_new_auth_token, as: :json
+      expect(response).to have_http_status(:success)
+
+      get room_path, headers: carla.create_new_auth_token, as: :json
+      expect(response.parsed_body['payload'].pluck('content')).to eq(['bom dia, pessoal'])
+    end
+
+    it 'does not open the company room to someone from another account' do
+      stranger = create(:user, account: create(:account))
+
+      get room_path, headers: stranger.create_new_auth_token, as: :json
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+
+    it 'blocks agents and supervisors when the room is restricted to administrators, but still lets them read' do
+      room.update!(posting_policy: :admins_only)
+
+      [ana, bruno].each do |user|
+        post room_path, params: { content: 'oi' }, headers: user.create_new_auth_token, as: :json
+        expect(response).to have_http_status(:unauthorized)
+      end
+      post room_path, params: { content: 'aviso' }, headers: administrator.create_new_auth_token, as: :json
+      expect(response).to have_http_status(:success)
+
+      get room_path, headers: ana.create_new_auth_token, as: :json
+      expect(response.parsed_body['payload'].pluck('content')).to eq(['aviso'])
+    end
+
+    it 'lets supervisors but not agents send when the room is restricted to administrators and supervisors' do
+      room.update!(posting_policy: :admins_and_supervisors)
+
+      post room_path, params: { content: 'do supervisor' }, headers: bruno.create_new_auth_token, as: :json
+      expect(response).to have_http_status(:success)
+
+      post room_path, params: { content: 'do agente' }, headers: ana.create_new_auth_token, as: :json
+      expect(response).to have_http_status(:unauthorized)
+    end
+
+    it 'applies the same rule to the room of a team' do
+      team = create(:team, account: account)
+      [ana, administrator].each { |user| create(:team_member, team: team, user: user) }
+      team_room = InternalChat::Channel.find_or_create_for_team!(account, team)
+      team_room.update!(posting_policy: :admins_only)
+      team_path = "/api/v1/accounts/#{account.id}/internal_chat/channels/#{team_room.id}/messages"
+
+      post team_path, params: { content: 'oi' }, headers: ana.create_new_auth_token, as: :json
+      expect(response).to have_http_status(:unauthorized)
+
+      post "/api/v1/accounts/#{account.id}/internal_chat/help_requests", params: { team_id: team.id, content: 'ajuda' },
+                                                                         headers: ana.create_new_auth_token, as: :json
+      expect(response).to have_http_status(:unauthorized)
+    end
+  end
 end

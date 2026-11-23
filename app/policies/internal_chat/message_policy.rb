@@ -3,8 +3,9 @@ class InternalChat::MessagePolicy < ApplicationPolicy
     InternalChat::ChannelPolicy.new(user_context, record.channel).show?
   end
 
+  # A member sends messages unless the posting policy of the room restricts it.
   def create?
-    index?
+    index? && record.channel.can_post?(account_user)
   end
 
   # Anyone in the channel except who asked can take a help request.

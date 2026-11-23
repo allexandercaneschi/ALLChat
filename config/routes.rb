@@ -242,6 +242,7 @@ Rails.application.routes.draw do
           resources :internal_help_requests, path: 'internal_chat/help_requests', only: [:create]
           resource :internal_search, path: 'internal_chat/search', only: [:show], controller: 'internal_search'
           resources :internal_audits, path: 'internal_chat/audit', only: [:index, :show]
+          resources :internal_rooms, path: 'internal_chat/rooms', only: [:index, :update]
 
           resources :conversation_requests, only: [:index] do
             member do

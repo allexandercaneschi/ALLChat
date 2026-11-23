@@ -34,6 +34,7 @@ class Api::V1::Accounts::InternalAuditsController < Api::V1::Accounts::BaseContr
       id: channel.id,
       kind: channel.kind,
       team: channel.team_room? ? { id: channel.team&.id, name: channel.team&.name } : nil,
+      name: channel.company_room? ? Current.account.name : nil,
       participants: channel.direct? ? channel.members.map(&:push_event_data) : []
     }
   end

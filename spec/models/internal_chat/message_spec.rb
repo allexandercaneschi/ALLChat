@@ -47,6 +47,17 @@ RSpec.describe InternalChat::Message do
     end
   end
 
+  describe 'in the company room' do
+    let(:company_room) { InternalChat::Channel.find_or_create_company_room!(account) }
+
+    it 'accepts text and refuses help requests, urgent messages and nudges' do
+      expect(described_class.new(account: account, channel: company_room, sender: ana, content: 'bom dia')).to be_valid
+      expect(described_class.new(account: account, channel: company_room, sender: ana, content: 'ajuda', kind: :help_request)).not_to be_valid
+      expect(described_class.new(account: account, channel: company_room, sender: ana, content: 'agora', urgent: true)).not_to be_valid
+      expect(described_class.new(account: account, channel: company_room, sender: ana, kind: :nudge, content: '')).not_to be_valid
+    end
+  end
+
   describe 'urgent messages and attention nudges' do
     let(:team_room) do
       team = create(:team, account: account)
