@@ -231,6 +231,13 @@ Rails.application.routes.draw do
             post :sync
           end
 
+          # ALLChat: internal team chat
+          resources :internal_channels, path: 'internal_chat/channels', only: [:index, :create] do
+            post :read, on: :member
+            resources :internal_messages, path: 'messages', only: [:index, :create]
+          end
+          resources :internal_help_requests, path: 'internal_chat/help_requests', only: [:create]
+
           resources :conversation_requests, only: [:index] do
             member do
               post :accept
