@@ -76,6 +76,7 @@ class ActionCableConnector extends BaseActionCableConnector {
       'voice_call.ended': this.onVoiceCallEnded,
       'conversation_request.updated': this.onConversationRequestUpdated,
       'internal_chat.message.created': this.onInternalChatMessageCreated,
+      'internal_chat.message.updated': this.onInternalChatMessageUpdated,
     };
   }
 
@@ -432,11 +433,19 @@ class ActionCableConnector extends BaseActionCableConnector {
   // ALLChat: internal team chat. Sent only to the members of the channel.
   onInternalChatMessageCreated = async data => {
     if (isImpersonating.value) return;
-    const shouldAlert = await useInternalChatStore().receiveMessage(
+    const { alert, attention } = await useInternalChatStore().receiveMessage(
       data,
       this.app.$store.getters.getCurrentUserID
     );
-    if (shouldAlert) emitter.emit(BUS_EVENTS.INTERNAL_CHAT_NEW_MESSAGE, data);
+    if (attention) emitter.emit(BUS_EVENTS.INTERNAL_CHAT_ATTENTION, data);
+    else if (alert) emitter.emit(BUS_EVENTS.INTERNAL_CHAT_NEW_MESSAGE, data);
+  };
+
+  // A help request was taken or resolved.
+  // eslint-disable-next-line class-methods-use-this
+  onInternalChatMessageUpdated = data => {
+    if (isImpersonating.value) return;
+    useInternalChatStore().replaceMessage(data);
   };
 
   onCacheInvalidate = data => {

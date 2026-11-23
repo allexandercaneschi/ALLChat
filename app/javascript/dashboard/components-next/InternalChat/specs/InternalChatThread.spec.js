@@ -6,7 +6,15 @@ import { useInternalChatStore } from 'dashboard/stores/internalChat';
 import InternalChatThread from '../InternalChatThread.vue';
 
 vi.mock('dashboard/composables/store', () => ({
-  useMapGetter: () => ref({ id: 1, name: 'Ana' }),
+  useMapGetter: name =>
+    ref(
+      name === 'agents/getAgents'
+        ? [
+            { id: 1, name: 'Ana' },
+            { id: 2, name: 'Bruno' },
+          ]
+        : { id: 1, name: 'Ana' }
+    ),
 }));
 
 vi.mock('dashboard/api/internalChat', () => ({
@@ -15,6 +23,7 @@ vi.mock('dashboard/api/internalChat', () => ({
     getMessages: vi.fn(),
     sendMessage: vi.fn(),
     sendHelpRequest: vi.fn(),
+    search: vi.fn(),
   },
 }));
 
@@ -47,6 +56,7 @@ const createThread = channel => {
       stubs: {
         Button: {
           props: ['label', 'disabled'],
+          emits: ['click'],
           template:
             '<button :disabled="disabled" :data-label="label" @click="$emit(\'click\')">{{ label }}</button>',
         },
@@ -88,7 +98,11 @@ describe('InternalChatThread', () => {
     await wrapper.find('textarea').setValue('oi Bruno');
     await buttonByLabel(wrapper, 'INTERNAL_CHAT.SEND').trigger('click');
     await vi.waitFor(() =>
-      expect(InternalChatAPI.sendMessage).toHaveBeenCalledWith(10, 'oi Bruno')
+      expect(InternalChatAPI.sendMessage).toHaveBeenCalledWith(10, {
+        content: 'oi Bruno',
+        urgent: false,
+        mentioned_user_ids: [],
+      })
     );
 
     await vi.waitFor(() =>
@@ -123,17 +137,131 @@ describe('InternalChatThread', () => {
     await vi.waitFor(() =>
       expect(InternalChatAPI.sendHelpRequest).toHaveBeenCalledWith({
         recipient_id: 2,
+        team_id: undefined,
         content: 'socorro',
         conversation_id: undefined,
       })
     );
   });
 
-  it('offers no help request button in a team room, so it can never be a broadcast', () => {
+  it('sends a help request to the whole team from a team room', async () => {
+    InternalChatAPI.sendHelpRequest.mockResolvedValue({
+      data: {
+        id: 3,
+        channel_id: 11,
+        kind: 'help_request',
+        content: 'alguém sabe?',
+        sender: { id: 1 },
+        created_at: 7,
+      },
+    });
     const { wrapper } = createThread(teamRoom);
 
-    expect(buttonByLabel(wrapper, 'INTERNAL_CHAT.ASK_HELP').exists()).toBe(
-      false
+    await wrapper.find('textarea').setValue('alguém sabe?');
+    await buttonByLabel(wrapper, 'INTERNAL_CHAT.HELP.ASK_TEAM').trigger(
+      'click'
+    );
+
+    await vi.waitFor(() =>
+      expect(InternalChatAPI.sendHelpRequest).toHaveBeenCalledWith({
+        recipient_id: undefined,
+        team_id: 3,
+        content: 'alguém sabe?',
+        conversation_id: undefined,
+      })
+    );
+  });
+
+  it('sends an urgent message only when marked as urgent, and only in a direct chat', async () => {
+    InternalChatAPI.sendMessage.mockResolvedValue({
+      data: {
+        id: 4,
+        channel_id: 10,
+        kind: 'text',
+        content: 'agora',
+        urgent: true,
+        sender: { id: 1 },
+        created_at: 8,
+      },
+    });
+    const { wrapper } = createThread(directChannel);
+
+    await buttonByLabel(wrapper, 'INTERNAL_CHAT.URGENT.LABEL').trigger('click');
+    await wrapper.find('textarea').setValue('agora');
+    await buttonByLabel(wrapper, 'INTERNAL_CHAT.SEND').trigger('click');
+
+    await vi.waitFor(() =>
+      expect(InternalChatAPI.sendMessage).toHaveBeenCalledWith(10, {
+        content: 'agora',
+        urgent: true,
+        mentioned_user_ids: [],
+      })
+    );
+    expect(
+      createThread(teamRoom)
+        .wrapper.find('button[data-label="INTERNAL_CHAT.URGENT.LABEL"]')
+        .exists()
+    ).toBe(false);
+  });
+
+  it('sends the attention nudge and blocks the button while the cooldown runs', async () => {
+    InternalChatAPI.sendMessage.mockResolvedValue({
+      data: {
+        id: 5,
+        channel_id: 10,
+        kind: 'nudge',
+        content: '',
+        sender: { id: 1 },
+        created_at: 9,
+      },
+    });
+    const { wrapper } = createThread(directChannel);
+
+    await buttonByLabel(wrapper, 'INTERNAL_CHAT.NUDGE.BUTTON').trigger('click');
+
+    await vi.waitFor(() =>
+      expect(InternalChatAPI.sendMessage).toHaveBeenCalledWith(10, {
+        kind: 'nudge',
+      })
+    );
+    await vi.waitFor(() =>
+      expect(
+        wrapper.find('button[data-label="INTERNAL_CHAT.NUDGE.WAIT"]').exists()
+      ).toBe(true)
+    );
+    expect(
+      wrapper.find('button[data-label="INTERNAL_CHAT.NUDGE.WAIT"]').element
+        .disabled
+    ).toBe(true);
+  });
+
+  it('sends the mentions that are still in the text', async () => {
+    InternalChatAPI.sendMessage.mockResolvedValue({
+      data: {
+        id: 6,
+        channel_id: 11,
+        kind: 'text',
+        content: '@Bruno olha',
+        sender: { id: 1 },
+        created_at: 10,
+      },
+    });
+    const { wrapper } = createThread(teamRoom);
+
+    await wrapper.find('[data-testid="mention-button"]').trigger('click');
+    await wrapper
+      .findAll('ul button')
+      .find(button => button.text() === 'Bruno')
+      .trigger('click');
+    await wrapper.find('textarea').setValue('@Bruno olha');
+    await buttonByLabel(wrapper, 'INTERNAL_CHAT.SEND').trigger('click');
+
+    await vi.waitFor(() =>
+      expect(InternalChatAPI.sendMessage).toHaveBeenCalledWith(11, {
+        content: '@Bruno olha',
+        urgent: false,
+        mentioned_user_ids: [2],
+      })
     );
   });
 });

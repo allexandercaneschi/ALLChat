@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import InternalChatAPI from 'dashboard/api/internalChat';
 
 // ALLChat: internal team chat. Channels and messages are kept in sync by the
-// `internal_chat.message.created` websocket event.
+// `internal_chat.message.created` and `internal_chat.message.updated` websocket events.
 export const CHANNEL_KINDS = {
   DIRECT: 'direct',
   TEAM_ROOM: 'team_room',
@@ -11,9 +11,19 @@ export const CHANNEL_KINDS = {
 export const MESSAGE_KINDS = {
   TEXT: 'text',
   HELP_REQUEST: 'help_request',
+  NUDGE: 'nudge',
 };
 
+// Keep in sync with InternalChat::NUDGE_COOLDOWN on the server.
+export const NUDGE_COOLDOWN_SECONDS = 60;
+
 const sortByActivity = (a, b) => b.last_activity_at - a.last_activity_at;
+
+// A message that must call attention: a nudge, a message marked as urgent or a mention of the agent.
+export const isAttentionMessage = (message, currentUserId) =>
+  message.kind === MESSAGE_KINDS.NUDGE ||
+  message.urgent === true ||
+  (message.mentioned_user_ids || []).includes(currentUserId);
 
 export const useInternalChatStore = defineStore('internalChat', {
   state: () => ({
@@ -25,6 +35,10 @@ export const useInternalChatStore = defineStore('internalChat', {
     viewingChannelId: null,
     isFetchingChannels: false,
     hasLoadedChannels: false,
+    // Timestamp (ms) when the attention nudge can be used again, per channel.
+    nudgeAvailableAt: {},
+    // Audit mode (administrators and supervisors): read-only conversations of others.
+    audit: { channels: [], activeChannel: null, messages: [] },
   }),
 
   getters: {
@@ -49,6 +63,18 @@ export const useInternalChatStore = defineStore('internalChat', {
       this.messages = {
         ...this.messages,
         [message.channel_id]: [...current, message],
+      };
+    },
+
+    // A message changed (a help request was taken or resolved).
+    replaceMessage(message) {
+      const current = this.messages[message.channel_id];
+      if (!current) return;
+      this.messages = {
+        ...this.messages,
+        [message.channel_id]: current.map(item =>
+          item.id === message.id ? message : item
+        ),
       };
     },
 
@@ -111,19 +137,64 @@ export const useInternalChatStore = defineStore('internalChat', {
       await InternalChatAPI.markRead(channelId);
     },
 
-    async sendMessage(channelId, content) {
-      const { data } = await InternalChatAPI.sendMessage(channelId, content);
+    // payload: { content, urgent, mentioned_user_ids }
+    async sendMessage(channelId, payload) {
+      const { data } = await InternalChatAPI.sendMessage(channelId, payload);
       this.registerMessage(data);
     },
 
-    async sendHelpRequest({ recipientId, content, conversationId }) {
+    // The server refuses a second nudge too soon: the button waits for `retry_after` seconds.
+    async sendNudge(channelId) {
+      try {
+        const { data } = await InternalChatAPI.sendMessage(channelId, {
+          kind: MESSAGE_KINDS.NUDGE,
+        });
+        this.registerMessage(data);
+        this.setNudgeCooldown(channelId, NUDGE_COOLDOWN_SECONDS);
+      } catch (error) {
+        const retryAfter = error.response?.data?.retry_after;
+        if (retryAfter) this.setNudgeCooldown(channelId, retryAfter);
+        throw error;
+      }
+    },
+
+    setNudgeCooldown(channelId, seconds) {
+      this.nudgeAvailableAt = {
+        ...this.nudgeAvailableAt,
+        [channelId]: Date.now() + seconds * 1000,
+      };
+    },
+
+    // params: { recipientId } for one person or { teamId } for the whole team, plus content.
+    async sendHelpRequest({ recipientId, teamId, content, conversationId }) {
       const { data } = await InternalChatAPI.sendHelpRequest({
         recipient_id: recipientId,
+        team_id: teamId,
         content,
         conversation_id: conversationId,
       });
       if (!this.channels[data.channel_id]) await this.fetchChannels();
       this.registerMessage(data);
+    },
+
+    // Takes a help request. Opens the direct conversation with who asked.
+    async claimHelpRequest(message) {
+      const { data } = await InternalChatAPI.claimHelpRequest(
+        message.channel_id,
+        message.id
+      );
+      this.replaceMessage(data.message);
+      await this.fetchChannels();
+      await this.setActiveChannel(data.channel_id);
+      return data;
+    },
+
+    async resolveHelpRequest(message) {
+      const { data } = await InternalChatAPI.resolveHelpRequest(
+        message.channel_id,
+        message.id
+      );
+      this.replaceMessage(data);
     },
 
     // Message created by the current agent: shows in the thread and moves the channel up.
@@ -138,17 +209,19 @@ export const useInternalChatStore = defineStore('internalChat', {
       });
     },
 
-    // Message from the websocket. Returns true when it is worth alerting the agent.
+    // Message from the websocket. Returns what the screen should do about it:
+    // alert (a new message is not on screen) and attention (nudge, urgent or mention).
     async receiveMessage(message, currentUserId) {
       this.appendMessage(message);
+      const isOwn = message.sender?.id === currentUserId;
+      const attention = !isOwn && isAttentionMessage(message, currentUserId);
       const channel = this.channels[message.channel_id];
       if (!channel) {
         // First message of a conversation somebody just opened with us.
         await this.fetchChannels();
-        return message.sender?.id !== currentUserId;
+        return { alert: !isOwn, attention };
       }
 
-      const isOwn = message.sender?.id === currentUserId;
       const isOnScreen = this.viewingChannelId === message.channel_id;
       this.upsertChannel({
         ...channel,
@@ -158,7 +231,35 @@ export const useInternalChatStore = defineStore('internalChat', {
           isOwn || isOnScreen ? channel.unread_count : channel.unread_count + 1,
       });
       if (isOnScreen && !isOwn) await this.markRead(message.channel_id);
-      return !isOwn && !isOnScreen;
+      return { alert: !isOwn && !isOnScreen, attention };
+    },
+
+    // Search. Without channelId it searches in all the conversations of the agent.
+    async search({ query, channelId, beforeId }) {
+      const { data } = await InternalChatAPI.search({
+        q: query,
+        channel_id: channelId,
+        before_id: beforeId,
+      });
+      return data;
+    },
+
+    async fetchAuditChannels() {
+      const { data } = await InternalChatAPI.getAuditChannels();
+      this.audit = { ...this.audit, channels: data.payload };
+    },
+
+    async openAuditChannel(channelId) {
+      const { data } = await InternalChatAPI.getAuditMessages(channelId);
+      this.audit = {
+        ...this.audit,
+        activeChannel: data.channel,
+        messages: data.payload,
+      };
+    },
+
+    closeAuditChannel() {
+      this.audit = { ...this.audit, activeChannel: null, messages: [] };
     },
   },
 });

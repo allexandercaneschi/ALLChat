@@ -466,7 +466,7 @@ describe('ActionCableConnector - internal chat', () => {
   });
 
   it('hands the message to the store and alerts when it is unseen', async () => {
-    receiveMessage.mockResolvedValue(true);
+    receiveMessage.mockResolvedValue({ alert: true, attention: false });
 
     await actionCable.onInternalChatMessageCreated(messageEvent.data);
 
@@ -477,14 +477,40 @@ describe('ActionCableConnector - internal chat', () => {
     );
   });
 
-  it('does not alert for messages already seen', async () => {
-    receiveMessage.mockResolvedValue(false);
+  it('calls attention for a nudge, an urgent message or a mention, instead of a plain alert', async () => {
+    receiveMessage.mockResolvedValue({ alert: true, attention: true });
 
     await actionCable.onInternalChatMessageCreated(messageEvent.data);
 
+    expect(emitter.emit).toHaveBeenCalledWith(
+      BUS_EVENTS.INTERNAL_CHAT_ATTENTION,
+      messageEvent.data
+    );
     expect(emitter.emit).not.toHaveBeenCalledWith(
       BUS_EVENTS.INTERNAL_CHAT_NEW_MESSAGE,
       expect.anything()
+    );
+  });
+
+  it('does not alert for messages already seen', async () => {
+    receiveMessage.mockResolvedValue({ alert: false, attention: false });
+
+    await actionCable.onInternalChatMessageCreated(messageEvent.data);
+
+    expect(emitter.emit).not.toHaveBeenCalled();
+  });
+
+  it('updates a help request that was taken or resolved', () => {
+    const replaceMessage = vi.fn();
+    useInternalChatStore.mockReturnValue({ replaceMessage });
+
+    actionCable.onReceived({
+      event: 'internal_chat.message.updated',
+      data: { ...messageEvent.data, resolved_at: 5 },
+    });
+
+    expect(replaceMessage).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 1, resolved_at: 5 })
     );
   });
 

@@ -1,12 +1,16 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useDebounceFn } from '@vueuse/core';
 import { useAlert } from 'dashboard/composables';
 import { useMapGetter } from 'dashboard/composables/store';
 import { useInternalChatStore } from 'dashboard/stores/internalChat';
 import Avatar from 'dashboard/components-next/avatar/Avatar.vue';
 import Button from 'dashboard/components-next/button/Button.vue';
 import { getChannelTitle, filterAgentsForChat } from './helpers';
+
+const SEARCH_DEBOUNCE_MS = 300;
+const MIN_SEARCH_LENGTH = 2;
 
 const { t } = useI18n();
 const store = useInternalChatStore();
@@ -15,6 +19,9 @@ const agents = useMapGetter('agents/getAgents');
 
 const isStartingChat = ref(false);
 const query = ref('');
+const searchQuery = ref('');
+const searchResults = ref([]);
+const hasSearched = ref(false);
 
 const candidates = computed(() =>
   filterAgentsForChat(agents.value, currentUser.value.id, query.value)
@@ -37,6 +44,36 @@ const open = async openAction => {
   }
 };
 
+const isSearching = computed(
+  () => searchQuery.value.trim().length >= MIN_SEARCH_LENGTH
+);
+
+const runSearch = async () => {
+  if (!isSearching.value) {
+    searchResults.value = [];
+    hasSearched.value = false;
+    return;
+  }
+  try {
+    const data = await store.search({ query: searchQuery.value.trim() });
+    searchResults.value = data.payload;
+    hasSearched.value = true;
+  } catch {
+    useAlert(t('INTERNAL_CHAT.ERRORS.SEARCH'));
+  }
+};
+watch(searchQuery, useDebounceFn(runSearch, SEARCH_DEBOUNCE_MS));
+
+const channelTitleFor = message => {
+  const channel = store.channels[message.channel_id];
+  return channel ? getChannelTitle(channel) : '';
+};
+
+const openResult = message => {
+  searchQuery.value = '';
+  return open(() => store.setActiveChannel(message.channel_id));
+};
+
 const openChannel = channel => open(() => store.setActiveChannel(channel.id));
 const startDirect = agent => open(() => store.openDirect(agent.id));
 </script>
@@ -56,7 +93,43 @@ const startDirect = agent => open(() => store.openDirect(agent.id));
       />
     </div>
 
-    <div v-if="isStartingChat" class="flex flex-col gap-2 px-4 pb-3">
+    <div class="px-4 pb-2">
+      <input
+        v-model="searchQuery"
+        type="search"
+        class="w-full !mb-0 text-sm"
+        :placeholder="$t('INTERNAL_CHAT.SEARCH.ALL')"
+      />
+    </div>
+
+    <ul v-if="isSearching" class="flex flex-col flex-1 overflow-y-auto">
+      <li
+        v-if="hasSearched && !searchResults.length"
+        class="px-4 py-6 text-sm text-center text-n-slate-11"
+      >
+        {{ $t('INTERNAL_CHAT.SEARCH.NO_RESULTS') }}
+      </li>
+      <li v-for="message in searchResults" :key="message.id">
+        <button
+          type="button"
+          class="flex flex-col w-full gap-0.5 px-4 py-2.5 text-start hover:bg-n-alpha-2"
+          @click="openResult(message)"
+        >
+          <span class="flex gap-1 text-xs text-n-slate-11">
+            <span class="truncate">{{ channelTitleFor(message) }}</span>
+            <span class="truncate">{{ message.sender?.name }}</span>
+          </span>
+          <span class="text-sm text-n-slate-12 line-clamp-2">
+            {{ message.content }}
+          </span>
+        </button>
+      </li>
+    </ul>
+
+    <div
+      v-if="isStartingChat && !isSearching"
+      class="flex flex-col gap-2 px-4 pb-3"
+    >
       <input
         v-model="query"
         type="search"
@@ -85,7 +158,7 @@ const startDirect = agent => open(() => store.openDirect(agent.id));
       </ul>
     </div>
 
-    <ul class="flex flex-col flex-1 overflow-y-auto">
+    <ul v-if="!isSearching" class="flex flex-col flex-1 overflow-y-auto">
       <li v-for="channel in store.channelList" :key="channel.id">
         <button
           type="button"

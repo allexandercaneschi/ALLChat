@@ -1,16 +1,19 @@
 <script setup>
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useAlert } from 'dashboard/composables';
 import { useMapGetter } from 'dashboard/composables/store';
 import { useUISettings } from 'dashboard/composables/useUISettings';
 import { useKeyboardEvents } from 'dashboard/composables/useKeyboardEvents';
+import { usePolicy } from 'dashboard/composables/usePolicy';
 import { useEmitter } from 'dashboard/composables/emitter';
 import { BUS_EVENTS } from 'shared/constants/busEvents';
 import { useInternalChatStore } from 'dashboard/stores/internalChat';
 import Button from 'dashboard/components-next/button/Button.vue';
+import InternalChatAudit from './InternalChatAudit.vue';
 import InternalChatChannelList from './InternalChatChannelList.vue';
 import InternalChatThread from './InternalChatThread.vue';
+import { callAttention } from './attention';
 
 // ALLChat: right column with the internal team chat. It takes the place of the contact column:
 // opening one closes the other (they share the `is_*_open` UI settings of the right-hand panels).
@@ -18,6 +21,12 @@ const { t } = useI18n();
 const { uiSettings, updateUISettings } = useUISettings();
 const store = useInternalChatStore();
 const currentChat = useMapGetter('getSelectedChat');
+const { checkPermissions } = usePolicy();
+
+const isAuditing = ref(false);
+const canAudit = computed(() =>
+  checkPermissions(['administrator', 'supervisor'])
+);
 
 const isOpen = computed(() => !!uiSettings.value.is_internal_chat_open);
 // Without an open conversation the switch next to the messages is not on screen, so offer a launcher.
@@ -41,6 +50,22 @@ useEmitter(BUS_EVENTS.INTERNAL_CHAT_NEW_MESSAGE, message => {
   );
 });
 
+// Nudge, urgent message or mention: sound, blinking tab title and a desktop notification that stays on screen.
+useEmitter(BUS_EVENTS.INTERNAL_CHAT_ATTENTION, message => {
+  const name = message.sender?.name;
+  let title = t('INTERNAL_CHAT.ATTENTION.MENTION', { name });
+  if (message.kind === 'nudge') {
+    title = t('INTERNAL_CHAT.ATTENTION.NUDGE', { name });
+  } else if (message.urgent) {
+    title = t('INTERNAL_CHAT.ATTENTION.URGENT', { name });
+  }
+  callAttention({
+    title,
+    body: message.content,
+    tag: `internal_chat_${message.channel_id}`,
+  });
+});
+
 onMounted(async () => {
   if (store.hasLoadedChannels) return;
   try {
@@ -62,16 +87,29 @@ onMounted(async () => {
       <span class="text-heading-3 text-n-slate-12">
         {{ $t('INTERNAL_CHAT.TITLE') }}
       </span>
-      <Button
-        ghost
-        slate
-        sm
-        icon="i-lucide-x"
-        :aria-label="$t('INTERNAL_CHAT.CLOSE')"
-        @click="toggle"
-      />
+      <div class="flex items-center">
+        <Button
+          v-if="canAudit"
+          v-tooltip.bottom="$t('INTERNAL_CHAT.AUDIT.TITLE')"
+          :faded="isAuditing"
+          :ghost="!isAuditing"
+          slate
+          sm
+          icon="i-lucide-shield-check"
+          @click="isAuditing = !isAuditing"
+        />
+        <Button
+          ghost
+          slate
+          sm
+          icon="i-lucide-x"
+          :aria-label="$t('INTERNAL_CHAT.CLOSE')"
+          @click="toggle"
+        />
+      </div>
     </div>
-    <InternalChatThread v-if="store.activeChannel" />
+    <InternalChatAudit v-if="isAuditing" @close="isAuditing = false" />
+    <InternalChatThread v-else-if="store.activeChannel" />
     <InternalChatChannelList v-else />
   </div>
   <div

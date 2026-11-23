@@ -87,49 +87,74 @@ agora) e consultar `inbox.out_of_office?`. A decisão fica em `InternalChat::Pus
 ## O que foi implementado
 
 - **Modelo** (`app/models/internal_chat/`): `Channel` (direto ou sala de time), `Participant` (ponteiro de leitura
-  por usuário), `Message` (texto ou pedido de ajuda). Tabelas `internal_chat_*`, sem chave estrangeira no banco.
+  por usuário), `Message` (texto, pedido de ajuda ou "chamar atenção") e `AuditLog`. Tabelas `internal_chat_*`, sem
+  chave estrangeira no banco. Uma conversa contínua por pessoa ou time (como Spark e WhatsApp); só o pedido de ajuda
+  tem estado (aberto, assumido, resolvido).
 - **Visibilidade** (`app/policies/internal_chat/`): conversa direta só para os dois participantes; sala de time só
-  para membros do time; **administradores não leem conversas diretas nem salas de times de que não são membros**.
-- **API** (`/api/v1/accounts/:id/internal_chat/...`):
-  `GET channels`, `POST channels` (`kind: direct, user_id` ou `kind: team_room, team_id`),
-  `POST channels/:id/read`, `GET|POST channels/:id/messages`, `POST help_requests`.
-- **Tempo real**: evento `internal_chat.message.created`, enviado só aos `pubsub_token`s dos membros do canal.
-- **Não lidas**: contador por canal (ponteiro de leitura) e total no botão da coluna.
+  para membros do time. A leitura de conversas de outros só existe pela auditoria (abaixo).
+- **API** (`/api/v1/accounts/:id/internal_chat/...`): `channels` (GET/POST), `channels/:id/read`,
+  `channels/:id/messages` (GET/POST, com `urgent`, `mentioned_user_ids` e `kind: nudge`),
+  `channels/:id/messages/:id/claim` e `/resolve`, `help_requests` (POST, `recipient_id` **ou** `team_id`),
+  `search` (`q`, `channel_id` opcional) e `audit` (GET lista, GET `audit/:id`).
+- **Tempo real**: eventos `internal_chat.message.created` e `internal_chat.message.updated`, enviados só aos
+  `pubsub_token`s dos membros do canal.
+- **Push**: `InternalChat::PushNotificationService` herda de `Notification::PushNotificationService`. A preferência
+  `push_internal_message` **nasce ligada** para todos (migração de dados para quem já existe e padrão para novos).
+- **Fora do expediente** (`InternalChat::Availability`): o agente está fora do expediente quando todas as caixas de
+  que é membro e que têm horário configurado estão fechadas ou em intervalo. Nesse caso o push só chega para:
+  `@menção` (sala de time ou conversa direta), mensagem marcada como **urgente** numa conversa direta e o botão
+  **chamar atenção**. Push urgente sai com prioridade alta e `channel_id: urgent` (Android) e
+  `interruption-level: time-sensitive` (iOS); o app móvel precisa criar o canal `urgent` e o som correspondente.
+- **Chamar atenção** (estilo MSN): só em conversa direta, com intervalo de 60 s por pessoa e conversa
+  (`InternalChat::NUDGE_COOLDOWN`); antes disso a API responde 429 com `retry_after`. No computador: som, título da
+  aba piscando e notificação do navegador que não some sozinha (`attention.js`).
+- **Pedir ajuda**: para uma pessoa (conversa direta) ou para o time todo (sala do time). Quem sabe ajudar clica em
+  **Assumir** (o primeiro vence): abre a conversa direta com quem pediu e entra como participante na conversa do
+  cliente, se houver uma ligada ao pedido e a pessoa tiver acesso à caixa. A troca de responsável pela conversa do
+  cliente continua pelo fluxo de transferência já existente. Quem pediu ou quem assumiu marca como resolvido.
+- **Busca**: dentro da conversa (ícone de lupa no topo) e em todas as conversas do agente (campo na lista).
+  Usa `ILIKE` com índice `pg_trgm` e só alcança conversas de que o agente participa.
+- **Auditoria**: administradores veem todas as conversas da conta; cada supervisor vê as salas dos times de que é
+  membro e as conversas diretas em que ao menos uma das duas pessoas é de um time dele. Cada leitura de conversa é
+  gravada em `internal_chat_audit_logs` (quem, qual conversa, quando). Na tela: ícone de escudo no topo da coluna,
+  só para administrador e supervisor.
+- **Retenção**: padrão de **365 dias** para o chat interno (`internal_chat_retention_days`) e para conversas
+  resolvidas de clientes (`conversation_retention_days`), editáveis em Configurações > Conta > Retenção de dados.
+  A limpeza (`Retention::PurgeExpiredJob`, diária às 03:00 UTC) **só roda nas contas em que
+  `retention_cleanup_enabled` está ligado (desligado por padrão)** e só remove conversas de clientes **resolvidas**.
+  `bundle exec rails retention:report` mostra, por conta, o que seria removido, sem apagar nada.
 - **Front**: coluna lateral direita (`components-next/InternalChat/`) que alterna com contato e copilot, atalho
-  `Alt+I`, lançador flutuante quando não há conversa aberta, alerta in-app e store Pinia (`stores/internalChat.js`).
-- **Push**: `InternalChat::PushNotificationService` herda de `Notification::PushNotificationService`
-  (browser push, FCM, relay e limpeza de assinaturas reaproveitados) e respeita a preferência `push_internal_message`
-  (nova linha na tela de preferências do perfil).
-- **Pedir ajuda**: `POST help_requests` com `recipient_id` único. Cria a mensagem do tipo `help_request` no canal
-  direto entre os dois. Não existe parâmetro para time ou lista de pessoas; o modelo recusa pedido de ajuda fora de
-  canal direto. Na tela há um botão "Pedir ajuda" no canal direto.
-- **Retenção**: configuração por conta `internal_chat_retention_days` (padrão 90). `InternalChat::Message.past_retention`
-  só define o que um futuro job removeria. Nada é apagado.
+  `Alt+I`, lançador flutuante quando não há conversa aberta, alertas in-app, store Pinia (`stores/internalChat.js`).
 
 ## O que falta
 
-- Anexos e arquivos, busca, supervisor/transmissões, app móvel (fora do escopo deste corte).
-- Job de limpeza pela retenção (hoje só existe o escopo `past_retention`).
-- Urgência fora do expediente (ponto de extensão: `InternalChat::PushNotificationService#mobile_push_allowed?`).
+- Anexos e arquivos, supervisor/transmissões e o app móvel (fora do escopo). O app móvel precisa do canal de
+  notificação `urgent` e de tratar o campo `urgent` do payload FCM.
+- Aviso de privacidade aos agentes de que as conversas podem ser auditadas (recomendado; hoje a tela de auditoria
+  só avisa quem audita).
+- Tela para consultar o log de auditoria (a tabela e a gravação existem).
+- Busca geral do Chatwoot (`/search`) ainda não inclui o chat interno; a busca está na própria coluna.
 - E-mail para mensagens internas (a linha de preferências mostra a coluna de e-mail, mas ela não faz nada).
-- Limpeza dos dados quando uma conta ou um usuário é apagado (hoje a mensagem fica órfã de remetente e o
-  `push_event_data` já tolera isso, mas não há remoção).
+- Limpeza dos dados quando uma conta ou um usuário é apagado.
 - Presença (bolinha online) e "digitando" na coluna.
-- Menu fixo na barra lateral (hoje: botão ao lado das mensagens, lançador flutuante e `Alt+I`).
-- Aviso in-app só aparece nas telas de conversas e inbox (onde a coluna existe). Em outras telas só há o push.
+- Expediente por agente (hoje é derivado das caixas) e janela do `chamar atenção` configurável.
 
-## Decisões pendentes para o dono
+## Decisões já tomadas pelo dono
 
-1. **Retenção**: 90 dias por padrão, configurável por conta (`internal_chat_retention_days`). Falta decidir se
-   apaga, arquiva ou exporta, e se o limite vale também para o que o usuário vê na tela.
-2. **Visibilidade**: conversa direta só dos dois; sala de time só dos membros; administrador **não** lê conversa
-   direta. Se for preciso auditoria, falta decidir quem, como e com aviso aos envolvidos.
-3. **Push ligado por padrão?** Hoje a flag `push_internal_message` nasce **desligada** (como as outras, só
-   `conversation_assignment` nasce ligada). Cada agente precisa marcar em Perfil > Notificações. Alternativa:
-   ligar para todos por padrão (migração de dados).
-4. **Push fora do expediente**: hoje chega sempre (se a preferência estiver ligada). Falta definir qual expediente
-   vale (o do ALLChat é por caixa) e o que é "urgente" (por exemplo, só `help_request`).
-5. **Quem pode receber pedido de ajuda**: hoje qualquer agente da conta, escolhido pelo remetente. Pode-se limitar a
-   supervisores e administradores, ou a quem está online.
-6. **Salas de time**: criadas na primeira listagem de um membro. Quem entra no time depois não vê o histórico como
-   não lido, mas o histórico continua visível para ele. Falta decidir se vê o que veio antes de entrar.
+1. Retenção de 365 dias (chat interno e clientes), editável nas configurações.
+2. Auditoria total para administradores e por time para cada supervisor.
+3. Push ligado por padrão.
+4. Fora do expediente só chega `@menção`, urgente em conversa privada e "chamar atenção" (com intervalo).
+5. O pedido de ajuda pode ir ao time todo; quem souber assume. Assumir não troca o responsável do cliente.
+6. Histórico completo em salas de time e conversas diretas, com busca.
+
+## Pontos para o dono confirmar
+
+- **Apagar clientes:** a limpeza de conversas de clientes está pronta, mas desligada. Rode `retention:report` antes
+  de ligar em uma conta e avalie o impacto em relatórios (conversas apagadas somem de contagens históricas).
+- **Auditoria e privacidade (LGPD):** recomenda-se avisar os agentes por escrito de que as conversas internas
+  podem ser auditadas, e definir quem acessa o log de auditoria.
+- **Intervalo do "chamar atenção":** 60 segundos por pessoa e conversa. Ajustável em `InternalChat::NUDGE_COOLDOWN`
+  e `NUDGE_COOLDOWN_SECONDS` (front).
+- **Entrada no time:** quem entra depois no time vê o histórico anterior da sala (só não conta como não lido).
+- **Quem assume:** qualquer membro da sala, menos quem pediu.

@@ -23,14 +23,39 @@ class InternalChatAPI extends ApiClient {
     return axios.get(`${this.url}/channels/${channelId}/messages`, { params });
   }
 
-  sendMessage(channelId, content) {
-    return axios.post(`${this.url}/channels/${channelId}/messages`, {
-      content,
-    });
+  // payload: { content, urgent, mentioned_user_ids } or { kind: 'nudge' }
+  sendMessage(channelId, payload) {
+    return axios.post(`${this.url}/channels/${channelId}/messages`, payload);
   }
 
+  // params: recipient_id (one person) or team_id (the whole team), plus content and conversation_id
   sendHelpRequest(params) {
     return axios.post(`${this.url}/help_requests`, params);
+  }
+
+  claimHelpRequest(channelId, messageId) {
+    return axios.post(
+      `${this.url}/channels/${channelId}/messages/${messageId}/claim`
+    );
+  }
+
+  resolveHelpRequest(channelId, messageId) {
+    return axios.post(
+      `${this.url}/channels/${channelId}/messages/${messageId}/resolve`
+    );
+  }
+
+  // params: q, channel_id (optional, search inside one conversation), before_id
+  search(params) {
+    return axios.get(`${this.url}/search`, { params });
+  }
+
+  getAuditChannels() {
+    return axios.get(`${this.url}/audit`);
+  }
+
+  getAuditMessages(channelId, params = {}) {
+    return axios.get(`${this.url}/audit/${channelId}`, { params });
   }
 }
 
