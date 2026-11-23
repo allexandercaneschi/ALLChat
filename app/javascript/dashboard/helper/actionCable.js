@@ -16,6 +16,7 @@ import { markCallDismissed, isLocalCall } from 'dashboard/helper/voice';
 import { VOICE_CALL_DIRECTION } from 'dashboard/components-next/message/constants';
 import { FEATURE_FLAGS } from 'dashboard/featureFlags';
 import { useConversationRequestsStore } from 'dashboard/stores/conversationRequests';
+import { useInternalChatStore } from 'dashboard/stores/internalChat';
 
 const { isImpersonating } = useImpersonation();
 const UNREAD_COUNTS_REFETCH_THROTTLE_MS = 5000;
@@ -74,6 +75,7 @@ class ActionCableConnector extends BaseActionCableConnector {
       'voice_call.outbound_accepted': this.onVoiceCallOutboundAccepted,
       'voice_call.ended': this.onVoiceCallEnded,
       'conversation_request.updated': this.onConversationRequestUpdated,
+      'internal_chat.message.created': this.onInternalChatMessageCreated,
     };
   }
 
@@ -425,6 +427,16 @@ class ActionCableConnector extends BaseActionCableConnector {
   // eslint-disable-next-line class-methods-use-this
   onConversationRequestUpdated = data => {
     useConversationRequestsStore().upsert(data);
+  };
+
+  // ALLChat: internal team chat. Sent only to the members of the channel.
+  onInternalChatMessageCreated = async data => {
+    if (isImpersonating.value) return;
+    const shouldAlert = await useInternalChatStore().receiveMessage(
+      data,
+      this.app.$store.getters.getCurrentUserID
+    );
+    if (shouldAlert) emitter.emit(BUS_EVENTS.INTERNAL_CHAT_NEW_MESSAGE, data);
   };
 
   onCacheInvalidate = data => {

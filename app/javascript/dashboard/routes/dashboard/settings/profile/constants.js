@@ -38,6 +38,10 @@ export const NOTIFICATION_TYPES = [
     label: 'PROFILE_SETTINGS.FORM.NOTIFICATIONS.TYPES.VOICE_CALL_MISSED',
     value: 'voice_call_missed',
   },
+  {
+    label: 'PROFILE_SETTINGS.FORM.NOTIFICATIONS.TYPES.INTERNAL_MESSAGE',
+    value: 'internal_message',
+  },
 ];
 
 export const EVENT_TYPES = {

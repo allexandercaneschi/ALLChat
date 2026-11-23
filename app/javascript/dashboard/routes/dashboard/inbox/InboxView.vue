@@ -18,6 +18,7 @@ import ConversationBox from 'dashboard/components/widgets/conversation/Conversat
 import InboxEmptyState from './InboxEmptyState.vue';
 import Spinner from 'dashboard/components-next/spinner/Spinner.vue';
 import ConversationSidebar from 'dashboard/components/widgets/conversation/ConversationSidebar.vue';
+import InternalChatSidebar from 'dashboard/components-next/InternalChat/InternalChatSidebar.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -223,6 +224,7 @@ onMounted(async () => {
           v-if="isContactPanelOpen"
           :current-chat="currentChat"
         />
+        <InternalChatSidebar />
       </div>
     </div>
   </div>
