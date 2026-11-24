@@ -34,6 +34,8 @@ class AutoAssignment::AssignmentService
 
   def unassigned_conversations(limit)
     scope = inbox.conversations.unassigned.open
+    # ALLChat: broadcast conversations are never auto-assigned
+    scope = scope.where("conversations.custom_attributes->>'transmissao' IS NULL")
 
     # Skip stale backlog with no activity beyond the age threshold
     policy = inbox.assignment_policy

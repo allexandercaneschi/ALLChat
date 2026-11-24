@@ -12,6 +12,7 @@ module AssignmentHandler
   def ensure_assignee_is_from_team
     return unless team_id_changed?
     return if ai_assignee_type.present?
+    return if broadcast_conversation? # ALLChat: broadcast conversation is routed to the team but not assigned to anyone
 
     validate_current_assignee_team
     self.assignee ||= find_assignee_from_team
