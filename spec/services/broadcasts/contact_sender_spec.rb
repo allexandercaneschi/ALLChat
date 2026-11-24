@@ -1,10 +1,10 @@
 require 'rails_helper'
 
-# ALLChat: the conversation opened by a broadcast must stay in the inbox without an agent,
-# even when the inbox and the team have auto assignment on.
+# ALLChat: the conversation opened by a broadcast must stay in the inbox without an agent. Team routing
+# (Team#allow_auto_assign, on by default) assigned an online member even with the inbox auto assignment off.
 RSpec.describe Broadcasts::ContactSender do
   let(:account) { create(:account) }
-  let(:inbox) { create(:inbox, account: account, enable_auto_assignment: true) }
+  let(:inbox) { create(:inbox, account: account, enable_auto_assignment: false) }
   let(:agent) { create(:user, account: account, role: :agent) }
   let(:team) { create(:team, account: account, allow_auto_assign: true) }
   let(:bot) { create(:agent_bot, account: account) }
@@ -17,6 +17,8 @@ RSpec.describe Broadcasts::ContactSender do
   before do
     create(:inbox_member, inbox: inbox, user: agent)
     create(:team_member, team: team, user: agent)
+    OnlineStatusTracker.update_presence(account.id, 'User', agent.id)
+    OnlineStatusTracker.set_status(account.id, agent.id, 'online')
   end
 
   it 'opens the conversation in the chosen team without assigning any agent' do
