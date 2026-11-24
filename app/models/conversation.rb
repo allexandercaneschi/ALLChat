@@ -232,6 +232,13 @@ class Conversation < ApplicationRecord
     ai_assignee || assignee
   end
 
+  # ALLChat: conversations opened by a broadcast (custom attribute "transmissao") are never
+  # auto-assigned: they stay in the inbox without an agent, and only a person takes them
+  # once the contact replies (see Broadcasts::ContactSender).
+  def broadcast_conversation?
+    custom_attributes.to_h['transmissao'].present?
+  end
+
   def tweet?
     inbox.inbox_type == 'Twitter' && additional_attributes['type'] == 'tweet'
   end
