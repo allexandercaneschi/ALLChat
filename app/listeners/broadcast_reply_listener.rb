@@ -5,6 +5,9 @@ class BroadcastReplyListener < BaseListener
   def message_created(event)
     message, _account = extract_message_and_account(event)
     return unless message.incoming?
+    # A reply from the contact's automatic responder is not an answer; if Chip later decides it was a
+    # person, AutoReply::Guard marks the broadcast as answered itself.
+    return if AutoReply::Guard.held?(message)
 
     conversation = message.conversation
     return unless %w[aguardando encerrada].include?(conversation.custom_attributes['transmissao'])
