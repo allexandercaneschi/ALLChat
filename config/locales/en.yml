@@ -441,6 +441,10 @@ en:
         not_sent_due_to_messaging_window: 'Auto-resolve message not sent due to outgoing message restrictions'
       muted: '%{user_name} has muted the conversation'
       unmuted: '%{user_name} has unmuted the conversation'
+      auto_reply:
+        held_memory: 'Automatic reply already known for this contact: the conversation stayed resolved and nothing was sent'
+        held_loop: 'Automatic replies in a loop: the conversation stayed resolved and nothing was sent'
+        held_chip: 'Chip identified an automatic reply (%{reason}): the conversation stayed resolved and nothing was sent'
       auto_resolution_message: 'Resolving the conversation as it has been inactive for a while. Please start a new conversation if you need further assistance.'
     templates:
       greeting_message_body: '%{account_name} typically replies in a few hours.'

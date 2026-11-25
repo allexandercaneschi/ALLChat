@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_11_23_135144) do
+ActiveRecord::Schema[7.1].define(version: 2026_11_25_113742) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -286,6 +286,21 @@ ActiveRecord::Schema[7.1].define(version: 2026_11_23_135144) do
     t.index ["created_at"], name: "index_audits_on_created_at"
     t.index ["request_uuid"], name: "index_audits_on_request_uuid"
     t.index ["user_id", "user_type"], name: "user_index"
+  end
+
+  create_table "auto_reply_signatures", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "contact_id", null: false
+    t.string "fingerprint", null: false
+    t.text "sample"
+    t.integer "verdict", default: 0, null: false
+    t.integer "source", default: 0, null: false
+    t.integer "hits", default: 0, null: false
+    t.datetime "last_seen_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_auto_reply_signatures_on_account_id"
+    t.index ["contact_id", "fingerprint"], name: "index_auto_reply_signatures_on_contact_id_and_fingerprint", unique: true
   end
 
   create_table "automation_rule_pending_executions", force: :cascade do |t|

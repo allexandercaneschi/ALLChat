@@ -379,6 +379,10 @@ pt_BR:
         not_sent_due_to_messaging_window: 'Auto-resolver mensagem não enviada devido a restrições de envio de mensagens'
       muted: '%{user_name} silenciou a conversa'
       unmuted: '%{user_name} reativou a conversa'
+      auto_reply:
+        held_memory: 'Resposta automática já conhecida deste contato: a conversa ficou resolvida e nada foi enviado'
+        held_loop: 'Respostas automáticas em sequência: a conversa ficou resolvida e nada foi enviado'
+        held_chip: 'A Chip identificou uma resposta automática (%{reason}): a conversa ficou resolvida e nada foi enviado'
       auto_resolution_message: 'Resolvendo a conversa dado que está inativa por um tempo. Por favor, inicie uma nova conversa se precisar de mais ajuda.'
     templates:
       greeting_message_body: '%{account_name} normalmente responde em algumas horas.'

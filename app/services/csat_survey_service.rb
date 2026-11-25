@@ -24,7 +24,8 @@ class CsatSurveyService
   end
 
   def conversation_allows_csat?
-    conversation.resolved? && !conversation.tweet?
+    # ALLChat: no survey for a conversation held because of an automatic responder (AutoReply::Guard)
+    conversation.resolved? && !conversation.tweet? && !AutoReply::Guard.held?(conversation)
   end
 
   def csat_enabled?

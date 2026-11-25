@@ -412,6 +412,8 @@ class Message < ApplicationRecord
   def reopen_conversation
     return if conversation.muted?
     return unless incoming?
+    # ALLChat: a reply from the contact's automatic responder must not reopen it (see AutoReply::Guard)
+    return if AutoReply::Guard.new(message: self).hold?
 
     conversation.open! if conversation.snoozed?
 
