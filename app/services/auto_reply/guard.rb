@@ -71,19 +71,22 @@ class AutoReply::Guard
   def apply_chip_verdict!
     return unless self.class.state_of(message) == ANALYZING
 
-    result = Chip::AutoReplyClassifier.new(account: message.account, text: message.content,
-                                           previous_text: last_outgoing&.content, seconds: seconds_since_last_outgoing).perform
-    if result[:error].blank? && result[:auto_reply]
-      AutoReplySignature.remember!(contact, message.content, verdict: :auto_reply, source: :ai)
-      confirm_hold!(result[:reason])
-    else
-      Rails.logger.info("[AutoReply::Guard] Chip unavailable for message #{message.id}: #{result[:error]}") if result[:error].present?
-      AutoReplySignature.remember!(contact, message.content, verdict: :human, source: :ai) if result[:error].blank?
-      release!
+    result = ask_chip
+    if result[:error].present?
+      Rails.logger.info("[AutoReply::Guard] Chip unavailable for message #{message.id}: #{result[:error]}")
+      return release!
     end
+
+    AutoReplySignature.remember!(contact, message.content, verdict: result[:auto_reply] ? :auto_reply : :human, source: :ai)
+    result[:auto_reply] ? confirm_hold!(result[:reason]) : release!
   end
 
   private
+
+  def ask_chip
+    Chip::AutoReplyClassifier.new(account: account, text: message.content,
+                                  previous_text: last_outgoing&.content, seconds: seconds_since_last_outgoing).perform
+  end
 
   delegate :conversation, :inbox, :account, to: :message
 
