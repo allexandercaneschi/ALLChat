@@ -5,7 +5,10 @@
            title: settings_page['name'] || @config.titleize,
            description: settings_page['description'],
            icon: settings_page['icon'] || 'i-lucide-sliders-horizontal' do %>
-  <%= form_with url: super_admin_app_config_url(config: @config), method: :post do |form| %>
+  <%# ALLChat: browsers and password managers filled the field before a secret with the login e-mail and the secret with the
+      saved password (it happened on the Chip page). These are system settings, never the user's own credentials. %>
+  <% no_autofill = { autocomplete: 'off', data: { '1p-ignore' => true, 'lpignore' => 'true', 'bwignore' => true } } %>
+  <%= form_with url: super_admin_app_config_url(config: @config), method: :post, html: { autocomplete: 'off' } do |form| %>
     <%# Not on the form itself: its hidden token input would count as the first row and give the next one a second top border. %>
     <div class="rounded-xl border border-n-weak bg-n-solid-1 divide-y divide-n-weak">
       <% @allowed_configs.each do |key| %>
@@ -33,7 +36,8 @@
                                  class: ui(:input, "overflow-scroll font-mono text-xs") %>
             <% elsif config['type'] == 'secret' %>
               <div class="relative">
-                <%= form.password_field "app_config[#{key}]", value: @app_config[key], id: field_id, class: ui(:input, "pe-10") %>
+                <%= form.password_field "app_config[#{key}]", value: @app_config[key], id: field_id, class: ui(:input, "pe-10"),
+                                                 **no_autofill, autocomplete: 'new-password' %>
                 <%= render "icon_button",
                            extra: "absolute end-1 top-1/2 -translate-y-1/2",
                            aria: { label: t("super_admin.actions.toggle_secret") },
@@ -48,7 +52,7 @@
                               { selected: @app_config[key] },
                               id: field_id, class: ui(:select) %>
             <% else %>
-              <%= form.text_field "app_config[#{key}]", value: @app_config[key], id: field_id, class: ui(:input) %>
+              <%= form.text_field "app_config[#{key}]", value: @app_config[key], id: field_id, class: ui(:input), **no_autofill %>
             <% end %>
           </div>
         </div>

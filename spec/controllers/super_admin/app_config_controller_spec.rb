@@ -20,6 +20,17 @@ RSpec.describe 'Super Admin Application Config API', type: :request do
         expect(response).to have_http_status(:success)
         expect(response.body).to include(config.value)
       end
+
+      it 'keeps browsers from autofilling the Chip settings with the login' do
+        sign_in(super_admin, scope: :super_admin)
+        get '/super_admin/app_config?config=chip'
+
+        page = Nokogiri::HTML(response.body)
+        expect(response).to have_http_status(:success)
+        expect(page.at_css('#app_config_CHIP_N8N_URL')['autocomplete']).to eq('off')
+        expect(page.at_css('#app_config_CHIP_N8N_TOKEN')['autocomplete']).to eq('new-password')
+        expect(page.at_css('#app_config_CHIP_N8N_TOKEN')['data-1p-ignore']).to be_present
+      end
     end
   end
 
