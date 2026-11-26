@@ -700,3 +700,15 @@
   value: 'production'
   locked: false
 ## ---- End of mobile incoming-call push ---- ##
+
+## ---- ALLChat: Chip (company AI, runs in n8n) ---- ##
+- name: CHIP_N8N_URL
+  display_title: 'Endereço dos fluxos da Chip no n8n'
+  description: 'Base dos webhooks da Chip no n8n; cada serviço é <endereço>/<serviço>. Exemplo: https://n8n.alltecnologias.com.br/webhook/chip'
+  locked: false
+- name: CHIP_N8N_TOKEN
+  display_title: 'Token da Chip'
+  description: 'Valor enviado no cabeçalho X-Chip-Token. Deve ser igual ao da credencial "Chip ALLChat" no n8n.'
+  locked: false
+  type: secret
+## ---- End of Chip ---- ##
