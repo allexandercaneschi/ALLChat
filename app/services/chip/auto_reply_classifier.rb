@@ -1,84 +1,30 @@
-# ALLChat: Chip is the company's AI. This service asks her whether a message a contact sent right
-# after one of ours was written by a person or by an automatic responder (WhatsApp Business away
-# message, a chatbot menu, "esta é uma mensagem automática"). Used by AutoReply::Guard.
+# ALLChat: asks Chip (the company's AI, see Chip::Client) whether a message a contact sent right after
+# one of ours was written by a person or by an automatic responder (WhatsApp Business away message,
+# a chatbot menu, "esta é uma mensagem automática"). Used by AutoReply::Guard.
 #
-# Chip runs on the LLM configured for Captain (CAPTAIN_OPEN_AI_API_KEY or the account OpenAI hook)
-# and needs the captain_tasks feature on the account. Any error comes back as { error: ... } and
-# the guard then treats the message as written by a person.
-class Chip::AutoReplyClassifier < Captain::BaseTaskService
-  SYSTEM_PROMPT = <<~PROMPT.freeze
-    Você é a Chip, a IA da ALL Tecnologias, uma empresa de suporte técnico que atende clientes pelo WhatsApp.
-    Muitos clientes têm resposta automática no WhatsApp (mensagem de ausência do WhatsApp Business,
-    menu de robô, aviso de horário de atendimento, "esta é uma mensagem automática").
-    Quando nós enviamos uma mensagem (finalização do atendimento, posição na fila, transmissão),
-    essa resposta automática volta e reabre o atendimento sem que uma pessoa tenha escrito nada.
-
-    Você recebe a nossa última mensagem, a resposta do cliente e quantos segundos ela levou para chegar.
-    Decida se a resposta foi gerada automaticamente ou escrita por uma pessoa.
-
-    Sinais de resposta automática: texto genérico que não responde ao que dissemos, saudação de empresa,
-    horário de funcionamento, "no momento não podemos atender", "retornaremos em breve", menu com opções
-    numeradas, aviso de mensagem automática, chegada em poucos segundos.
-    Sinais de pessoa: responde ao conteúdo da nossa mensagem, faz pergunta ou pedido de suporte,
-    agradece de forma curta ("ok", "obrigado", "valeu"), descreve um problema, cita algo específico.
-    Na dúvida, responda que foi uma pessoa: segurar a mensagem de um cliente real é pior que deixar passar.
-
-    Responda apenas com JSON, sem texto fora dele:
-    {"automatica": true ou false, "motivo": "uma frase curta em português"}
-  PROMPT
+# The prompt and the model live in the n8n flow "Chip - Resposta automática" (POST
+# <CHIP_N8N_URL>/resposta-automatica with texto, ultima_mensagem and segundos; it answers
+# { automatica, motivo }). Any failure comes back as { error: ... } and the guard then treats the
+# message as written by a person.
+class Chip::AutoReplyClassifier
+  SERVICE = 'resposta-automatica'.freeze
 
   pattr_initialize [:account!, :text!, { previous_text: nil, seconds: nil }]
 
   def perform
-    response = make_api_call(
-      feature: 'editor',
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: user_prompt }
-      ]
-    )
+    return { error: 'Chip is not configured (CHIP_N8N_URL / CHIP_N8N_TOKEN)' } unless Chip::Client.configured?
+
+    response = Chip::Client.new.post(SERVICE, texto: text, ultima_mensagem: previous_text, segundos: seconds)
     return { error: response[:error] } if response[:error]
 
-    build_result(response[:message])
+    build_result(response)
   end
 
   private
 
-  def user_prompt
-    <<~PROMPT
-      Nossa última mensagem:
-      #{previous_text.presence || '(nenhuma)'}
+  def build_result(body)
+    return { error: 'Invalid Chip response format' } unless [true, false].include?(body['automatica'])
 
-      Resposta do cliente#{seconds ? " (chegou #{seconds} segundos depois)" : ''}:
-      #{text}
-    PROMPT
-  end
-
-  def build_result(content)
-    parsed = parse_json(content)
-    return { error: 'Invalid LLM response format' } unless parsed.is_a?(Hash) && [true, false].include?(parsed['automatica'])
-
-    { auto_reply: parsed['automatica'], reason: parsed['motivo'].to_s.truncate(200) }
-  end
-
-  def parse_json(content)
-    raw = content.to_s.strip
-    json = raw.match(/```(?:json)?\s*(.*?)\s*```/m)&.captures&.first || raw
-    JSON.parse(json)
-  rescue JSON::ParserError
-    nil
-  end
-
-  def event_name
-    'chip_auto_reply_classification'
-  end
-
-  def use_account_openai_hook?
-    true
-  end
-
-  # Internal housekeeping: does not consume the account's Captain responses.
-  def counts_toward_usage?
-    false
+    { auto_reply: body['automatica'], reason: body['motivo'].to_s.truncate(200) }
   end
 end

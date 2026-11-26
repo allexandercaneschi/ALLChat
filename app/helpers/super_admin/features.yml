@@ -53,6 +53,12 @@ captain:
   enabled: true
   icon: 'i-woot-captain text-n-violet-9'
   config_key: 'captain'
+chip:
+  name: 'Chip'
+  description: 'IA da ALL Tecnologias. Os serviços dela rodam no n8n, como a trava de resposta automática do WhatsApp.'
+  enabled: true
+  icon: 'i-lucide-bot'
+  config_key: 'chip'
 
 # ------- Communication Channels ------- #
 live_chat:

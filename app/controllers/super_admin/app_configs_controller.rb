@@ -73,7 +73,8 @@ class SuperAdmin::AppConfigsController < SuperAdmin::ApplicationController
       'notion' => %w[NOTION_CLIENT_ID NOTION_CLIENT_SECRET],
       'google' => %w[GOOGLE_OAUTH_CLIENT_ID GOOGLE_OAUTH_CLIENT_SECRET GOOGLE_OAUTH_REDIRECT_URI ENABLE_GOOGLE_OAUTH_LOGIN],
       'captain' => %w[CAPTAIN_OPEN_AI_API_KEY CAPTAIN_OPEN_AI_MODEL CAPTAIN_OPEN_AI_ENDPOINT
-                      CAPTAIN_OPENROUTER_API_KEY CAPTAIN_OPENROUTER_DECISION_MODEL_ENDPOINT]
+                      CAPTAIN_OPENROUTER_API_KEY CAPTAIN_OPENROUTER_DECISION_MODEL_ENDPOINT],
+      'chip' => %w[CHIP_N8N_URL CHIP_N8N_TOKEN]
     }
 
     @allowed_configs = mapping.fetch(@config, general_configs)
